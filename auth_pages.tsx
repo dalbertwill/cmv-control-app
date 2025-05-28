@@ -1,10 +1,10 @@
 // src/app/(auth)/layout.tsx
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AuthLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
@@ -12,40 +12,40 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="flex min-h-screen">
         {/* Left side - Hero/Branding */}
-        <div className="hidden lg:flex lg:w-1/2 xl:w-2/5 bg-primary text-primary-foreground">
+        <div className="bg-primary text-primary-foreground hidden lg:flex lg:w-1/2 xl:w-2/5">
           <div className="flex flex-col justify-center px-12 py-12">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold mb-4">CMV Control</h1>
-              <p className="text-xl text-primary-foreground/90 leading-relaxed">
+              <h1 className="mb-4 text-4xl font-bold">CMV Control</h1>
+              <p className="text-primary-foreground/90 text-xl leading-relaxed">
                 Sistema inteligente para controle de CMV e gestão de custos em restaurantes
               </p>
             </div>
-            
+
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 bg-primary-foreground/70 rounded-full mt-2 flex-shrink-0" />
+                <div className="bg-primary-foreground/70 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                 <div>
-                  <h3 className="font-semibold mb-1">Controle Total de Custos</h3>
+                  <h3 className="mb-1 font-semibold">Controle Total de Custos</h3>
                   <p className="text-primary-foreground/80 text-sm">
                     Monitore e otimize o CMV do seu restaurante com precisão
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 bg-primary-foreground/70 rounded-full mt-2 flex-shrink-0" />
+                <div className="bg-primary-foreground/70 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                 <div>
-                  <h3 className="font-semibold mb-1">Fichas Técnicas Inteligentes</h3>
+                  <h3 className="mb-1 font-semibold">Fichas Técnicas Inteligentes</h3>
                   <p className="text-primary-foreground/80 text-sm">
                     Calcule automaticamente os custos de suas receitas
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 bg-primary-foreground/70 rounded-full mt-2 flex-shrink-0" />
+                <div className="bg-primary-foreground/70 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                 <div>
-                  <h3 className="font-semibold mb-1">Relatórios Avançados</h3>
+                  <h3 className="mb-1 font-semibold">Relatórios Avançados</h3>
                   <p className="text-primary-foreground/80 text-sm">
                     Insights detalhados para tomada de decisões estratégicas
                   </p>
@@ -75,38 +75,45 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // src/app/(auth)/login/page.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
-import { useAuth } from '@/components/providers/providers'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useToast } from '@/hooks/use-toast'
-import { loginSchema, type LoginInput } from '@/lib/validations/auth'
+import { useAuth } from '@/components/providers/providers';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { loginSchema, type LoginInput } from '@/lib/validations/auth';
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
-  
-  const { signIn } = useAuth()
-  const { toast } = useToast()
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+
+  const { signIn } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -114,53 +121,50 @@ export default function LoginPage() {
       email: '',
       password: '',
     },
-  })
+  });
 
   const onSubmit = async (data: LoginInput) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
-      const { error } = await signIn(data.email, data.password)
-      
+      const { error } = await signIn(data.email, data.password);
+
       if (error) {
         toast({
           title: 'Erro no login',
           description: error,
           variant: 'destructive',
-        })
-        return
+        });
+        return;
       }
 
       toast({
         title: 'Login realizado com sucesso!',
         description: 'Redirecionando...',
-      })
-      
+      });
+
       // Pequeno delay para mostrar o toast
       setTimeout(() => {
-        router.push(redirectTo)
-      }, 1000)
-      
+        router.push(redirectTo);
+      }, 1000);
     } catch (error) {
       toast({
         title: 'Erro no login',
         description: 'Algo deu errado. Tente novamente.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="border-0 shadow-xl">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">Entrar na sua conta</CardTitle>
-        <CardDescription>
-          Digite seu email e senha para acessar o CMV Control
-        </CardDescription>
+        <CardDescription>Digite seu email e senha para acessar o CMV Control</CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -221,19 +225,12 @@ export default function LoginPage() {
             />
 
             <div className="flex items-center justify-between">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
+              <Link href="/forgot-password" className="text-primary text-sm hover:underline">
                 Esqueceu a senha?
               </Link>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full btn-primary" 
-              disabled={isLoading}
-            >
+            <Button type="submit" className="btn-primary w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -247,9 +244,9 @@ export default function LoginPage() {
         </Form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Não tem uma conta?{' '}
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            <Link href="/register" className="text-primary font-medium hover:underline">
               Criar conta gratuita
             </Link>
           </p>
@@ -259,12 +256,10 @@ export default function LoginPage() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-muted" />
+              <div className="border-muted w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Ou continue com
-              </span>
+              <span className="bg-background text-muted-foreground px-2">Ou continue com</span>
             </div>
           </div>
 
@@ -294,36 +289,44 @@ export default function LoginPage() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // src/app/(auth)/register/page.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader2, Check } from 'lucide-react'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
 
-import { useAuth } from '@/components/providers/providers'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
-import { Checkbox } from '@/components/ui/checkbox'
-import { useToast } from '@/hooks/use-toast'
-import { registerSchema, type RegisterInput } from '@/lib/validations/auth'
+import { useAuth } from '@/components/providers/providers';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
+import { registerSchema, type RegisterInput } from '@/lib/validations/auth';
 
 export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const router = useRouter()
-  const { signUp } = useAuth()
-  const { toast } = useToast()
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
+  const { signUp } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -335,9 +338,9 @@ export default function RegisterPage() {
       nomeRestaurante: '',
       termsAccepted: false,
     },
-  })
+  });
 
-  const watchPassword = form.watch('password')
+  const watchPassword = form.watch('password');
 
   // Validadores de senha em tempo real
   const passwordValidations = {
@@ -345,54 +348,51 @@ export default function RegisterPage() {
     lowercase: /[a-z]/.test(watchPassword),
     uppercase: /[A-Z]/.test(watchPassword),
     number: /\d/.test(watchPassword),
-  }
+  };
 
   const onSubmit = async (data: RegisterInput) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       const { error } = await signUp(data.email, data.password, {
         full_name: data.nomeCompleto,
         restaurant_name: data.nomeRestaurante,
-      })
-      
+      });
+
       if (error) {
         toast({
           title: 'Erro no cadastro',
           description: error,
           variant: 'destructive',
-        })
-        return
+        });
+        return;
       }
 
       toast({
         title: 'Conta criada com sucesso!',
         description: 'Verifique seu email para confirmar a conta.',
-      })
-      
+      });
+
       // Redirecionar para página de verificação de email
-      router.push('/login?message=check-email')
-      
+      router.push('/login?message=check-email');
     } catch (error) {
       toast({
         title: 'Erro no cadastro',
         description: 'Algo deu errado. Tente novamente.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="border-0 shadow-xl">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">Criar sua conta</CardTitle>
-        <CardDescription>
-          Comece a controlar o CMV do seu restaurante hoje mesmo
-        </CardDescription>
+        <CardDescription>Comece a controlar o CMV do seu restaurante hoje mesmo</CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -487,32 +487,40 @@ export default function RegisterPage() {
                       </Button>
                     </div>
                   </FormControl>
-                  
+
                   {/* Validação visual da senha */}
                   {watchPassword && (
                     <div className="mt-2 space-y-1">
-                      <div className="text-xs text-muted-foreground">Sua senha deve ter:</div>
+                      <div className="text-muted-foreground text-xs">Sua senha deve ter:</div>
                       <div className="grid grid-cols-2 gap-1 text-xs">
-                        <div className={`flex items-center gap-1 ${passwordValidations.length ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`flex items-center gap-1 ${passwordValidations.length ? 'text-green-600' : 'text-muted-foreground'}`}
+                        >
                           <Check className="h-3 w-3" />
                           6+ caracteres
                         </div>
-                        <div className={`flex items-center gap-1 ${passwordValidations.lowercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`flex items-center gap-1 ${passwordValidations.lowercase ? 'text-green-600' : 'text-muted-foreground'}`}
+                        >
                           <Check className="h-3 w-3" />
                           Minúscula
                         </div>
-                        <div className={`flex items-center gap-1 ${passwordValidations.uppercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`flex items-center gap-1 ${passwordValidations.uppercase ? 'text-green-600' : 'text-muted-foreground'}`}
+                        >
                           <Check className="h-3 w-3" />
                           Maiúscula
                         </div>
-                        <div className={`flex items-center gap-1 ${passwordValidations.number ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`flex items-center gap-1 ${passwordValidations.number ? 'text-green-600' : 'text-muted-foreground'}`}
+                        >
                           <Check className="h-3 w-3" />
                           Número
                         </div>
                       </div>
                     </div>
                   )}
-                  
+
                   <FormMessage />
                 </FormItem>
               )}
@@ -583,11 +591,7 @@ export default function RegisterPage() {
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full btn-primary" 
-              disabled={isLoading}
-            >
+            <Button type="submit" className="btn-primary w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -601,81 +605,87 @@ export default function RegisterPage() {
         </Form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Já tem uma conta?{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">
+            <Link href="/login" className="text-primary font-medium hover:underline">
               Fazer login
             </Link>
           </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // src/app/(auth)/forgot-password/page.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Loader2, Mail } from 'lucide-react'
+import { useState } from 'react';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useToast } from '@/hooks/use-toast'
-import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth'
-import { supabase } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth';
+import { supabase } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  
-  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
+  const { toast } = useToast();
 
   const form = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: '',
     },
-  })
+  });
 
   const onSubmit = async (data: ForgotPasswordInput) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${window.location.origin}/reset-password`,
-      })
-      
+      });
+
       if (error) {
         toast({
           title: 'Erro ao enviar email',
           description: error.message,
           variant: 'destructive',
-        })
-        return
+        });
+        return;
       }
 
-      setEmailSent(true)
+      setEmailSent(true);
       toast({
         title: 'Email enviado!',
         description: 'Verifique sua caixa de entrada para redefinir sua senha.',
-      })
-      
+      });
     } catch (error) {
       toast({
         title: 'Erro ao enviar email',
         description: 'Algo deu errado. Tente novamente.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (emailSent) {
     return (
@@ -689,21 +699,17 @@ export default function ForgotPasswordPage() {
             Enviamos um link para redefinir sua senha para o seu email.
           </CardDescription>
         </CardHeader>
-        
-        <CardContent className="text-center space-y-4">
-          <p className="text-sm text-muted-foreground">
+
+        <CardContent className="space-y-4 text-center">
+          <p className="text-muted-foreground text-sm">
             Não recebeu o email? Verifique sua caixa de spam ou tente novamente.
           </p>
-          
+
           <div className="space-y-2">
-            <Button 
-              onClick={() => setEmailSent(false)} 
-              variant="outline" 
-              className="w-full"
-            >
+            <Button onClick={() => setEmailSent(false)} variant="outline" className="w-full">
               Tentar outro email
             </Button>
-            
+
             <Button asChild variant="ghost" className="w-full">
               <Link href="/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -713,7 +719,7 @@ export default function ForgotPasswordPage() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -724,7 +730,7 @@ export default function ForgotPasswordPage() {
           Digite seu email e enviaremos um link para redefinir sua senha
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -748,11 +754,7 @@ export default function ForgotPasswordPage() {
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full btn-primary" 
-              disabled={isLoading}
-            >
+            <Button type="submit" className="btn-primary w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -775,5 +777,5 @@ export default function ForgotPasswordPage() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

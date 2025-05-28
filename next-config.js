@@ -12,9 +12,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'google-fonts',
         expiration: {
           maxEntries: 4,
-          maxAgeSeconds: 365 * 24 * 60 * 60 // 365 days
-        }
-      }
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
+        },
+      },
     },
     {
       urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
@@ -23,9 +23,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'google-fonts-static',
         expiration: {
           maxEntries: 4,
-          maxAgeSeconds: 365 * 24 * 60 * 60 // 365 days
-        }
-      }
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
+        },
+      },
     },
     {
       urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
@@ -34,9 +34,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-font-assets',
         expiration: {
           maxEntries: 4,
-          maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
-        }
-      }
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        },
+      },
     },
     {
       urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
@@ -45,9 +45,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-image-assets',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\/_next\/image\?url=.+$/i,
@@ -56,9 +56,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'next-image',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\.(?:mp3|wav|ogg)$/i,
@@ -68,9 +68,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-audio-assets',
         expiration: {
           maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\.(?:mp4)$/i,
@@ -80,9 +80,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-video-assets',
         expiration: {
           maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\.(?:js)$/i,
@@ -91,9 +91,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-js-assets',
         expiration: {
           maxEntries: 48,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\.(?:css|less)$/i,
@@ -102,9 +102,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-style-assets',
         expiration: {
           maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\/_next\/static.+\.js$/i,
@@ -113,9 +113,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'next-static-js-assets',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
     },
     {
       urlPattern: /\/api\/.*$/i,
@@ -125,10 +125,10 @@ const withPWA = require('next-pwa')({
         cacheName: 'apis',
         expiration: {
           maxEntries: 16,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
-        networkTimeoutSeconds: 10 // fall back to cache if api does not response within 10 seconds
-      }
+        networkTimeoutSeconds: 10, // fall back to cache if api does not response within 10 seconds
+      },
     },
     {
       urlPattern: /.*/i,
@@ -137,19 +137,19 @@ const withPWA = require('next-pwa')({
         cacheName: 'others',
         expiration: {
           maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
-        networkTimeoutSeconds: 10
-      }
-    }
-  ]
-})
+        networkTimeoutSeconds: 10,
+      },
+    },
+  ],
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  
+
   // Experimental features
   experimental: {
     optimizeCss: true,
@@ -185,7 +185,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cdn.pixabay.com',
-      }
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -243,8 +243,8 @@ const nextConfig = {
             value: 'no-store, max-age=0',
           },
         ],
-      }
-    ]
+      },
+    ];
   },
 
   // Redirects
@@ -261,7 +261,7 @@ const nextConfig = {
           },
         ],
       },
-    ]
+    ];
   },
 
   // Environment variables
@@ -278,28 +278,28 @@ const nextConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         '@': require('path').resolve(__dirname, 'src'),
-      }
+      };
     }
 
     // Handle SVG imports
     config.module.rules.push({
       test: /\.svg$/,
       use: ['@svgr/webpack'],
-    })
+    });
 
-    return config
+    return config;
   },
 
   // Output configuration
   output: 'standalone',
-  
+
   // Ignore TypeScript errors during build (optional - remove in production)
   typescript: {
     // !! WARN: This allows production builds to successfully complete even if
     // your project has type errors. Remove this in production!
     ignoreBuildErrors: false,
   },
-  
+
   // Ignore ESLint errors during build (optional - remove in production)
   eslint: {
     // !! WARN: This allows production builds to successfully complete even if
@@ -313,6 +313,6 @@ const nextConfig = {
       fullUrl: true,
     },
   },
-}
+};
 
-module.exports = withPWA(nextConfig)
+module.exports = withPWA(nextConfig);

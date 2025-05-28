@@ -1,5 +1,5 @@
 // src/lib/validations/recipe.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const recipeIngredientSchema = z.object({
   productId: z.string({ required_error: 'Produto é obrigatório' }),
@@ -8,7 +8,7 @@ export const recipeIngredientSchema = z.object({
     .min(0.01, 'Quantidade deve ser maior que zero'),
   unidade: z.string({ required_error: 'Unidade é obrigatória' }),
   observacoes: z.string().optional(),
-})
+});
 
 export const recipeSchema = z.object({
   nome: z
@@ -17,39 +17,27 @@ export const recipeSchema = z.object({
     .max(100, 'Nome muito longo'),
   descricao: z.string().optional(),
   categoria: z.string().optional(),
-  tempoPreparo: z
-    .number()
-    .min(1, 'Tempo deve ser maior que zero')
-    .optional(),
-  rendimentoPorcoes: z
-    .number()
-    .min(1, 'Rendimento deve ser maior que zero')
-    .optional()
-    .default(1),
+  tempoPreparo: z.number().min(1, 'Tempo deve ser maior que zero').optional(),
+  rendimentoPorcoes: z.number().min(1, 'Rendimento deve ser maior que zero').optional().default(1),
   margemLucroDesejada: z
     .number()
     .min(0, 'Margem não pode ser negativa')
     .max(100, 'Margem não pode ser maior que 100%')
     .optional()
     .default(0),
-  precoVendaSugerido: z
-    .number()
-    .min(0, 'Preço não pode ser negativo')
-    .optional(),
+  precoVendaSugerido: z.number().min(0, 'Preço não pode ser negativo').optional(),
   ativa: z.boolean().optional().default(true),
-  ingredients: z
-    .array(recipeIngredientSchema)
-    .min(1, 'Receita deve ter pelo menos 1 ingrediente'),
-})
+  ingredients: z.array(recipeIngredientSchema).min(1, 'Receita deve ter pelo menos 1 ingrediente'),
+});
 
-export type RecipeInput = z.infer<typeof recipeSchema>
-export type RecipeIngredientInput = z.infer<typeof recipeIngredientSchema>
+export type RecipeInput = z.infer<typeof recipeSchema>;
+export type RecipeIngredientInput = z.infer<typeof recipeIngredientSchema>;
 
 // src/lib/queries/recipes.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase/client'
-import type { Recipe, RecipeWithIngredients } from '@/lib/supabase/types'
-import type { RecipeInput } from '@/lib/validations/recipe'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase/client';
+import type { Recipe, RecipeWithIngredients } from '@/lib/supabase/types';
+import type { RecipeInput } from '@/lib/validations/recipe';
 
 // Query keys
 export const RECIPE_QUERY_KEYS = {
@@ -58,41 +46,40 @@ export const RECIPE_QUERY_KEYS = {
   list: (filters: Record<string, any>) => [...RECIPE_QUERY_KEYS.lists(), filters] as const,
   details: () => [...RECIPE_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...RECIPE_QUERY_KEYS.details(), id] as const,
-}
+};
 
-export function useRecipes(filters: {
-  search?: string
-  categoria?: string
-  status?: 'active' | 'inactive' | 'all'
-} = {}) {
+export function useRecipes(
+  filters: {
+    search?: string;
+    categoria?: string;
+    status?: 'active' | 'inactive' | 'all';
+  } = {},
+) {
   return useQuery({
     queryKey: RECIPE_QUERY_KEYS.list(filters),
     queryFn: async () => {
-      let query = supabase
-        .from('recipes')
-        .select('*')
-        .order('created_at', { ascending: false })
+      let query = supabase.from('recipes').select('*').order('created_at', { ascending: false });
 
       if (filters.search) {
-        query = query.ilike('nome', `%${filters.search}%`)
+        query = query.ilike('nome', `%${filters.search}%`);
       }
 
       if (filters.categoria) {
-        query = query.eq('categoria', filters.categoria)
+        query = query.eq('categoria', filters.categoria);
       }
 
       if (filters.status === 'active') {
-        query = query.eq('ativa', true)
+        query = query.eq('ativa', true);
       } else if (filters.status === 'inactive') {
-        query = query.eq('ativa', false)
+        query = query.eq('ativa', false);
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
-      if (error) throw error
-      return data as Recipe[]
+      if (error) throw error;
+      return data as Recipe[];
     },
-  })
+  });
 }
 
 export function useRecipe(id: string) {
@@ -101,7 +88,8 @@ export function useRecipe(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('recipes')
-        .select(`
+        .select(
+          `
           *,
           recipe_ingredients (
             *,
@@ -112,68 +100,71 @@ export function useRecipe(id: string) {
               preco_atual
             )
           )
-        `)
+        `,
+        )
         .eq('id', id)
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as RecipeWithIngredients
+      if (error) throw error;
+      return data as RecipeWithIngredients;
     },
     enabled: !!id,
-  })
+  });
 }
 
 export function useCreateRecipe() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: RecipeInput) => {
       // Create recipe
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
-        .insert([{
-          nome: data.nome,
-          descricao: data.descricao,
-          categoria: data.categoria,
-          tempo_preparo: data.tempoPreparo,
-          rendimento_porcoes: data.rendimentoPorcoes,
-          margem_lucro_desejada: data.margemLucroDesejada,
-          preco_venda_sugerido: data.precoVendaSugerido,
-          ativa: data.ativa,
-        }])
+        .insert([
+          {
+            nome: data.nome,
+            descricao: data.descricao,
+            categoria: data.categoria,
+            tempo_preparo: data.tempoPreparo,
+            rendimento_porcoes: data.rendimentoPorcoes,
+            margem_lucro_desejada: data.margemLucroDesejada,
+            preco_venda_sugerido: data.precoVendaSugerido,
+            ativa: data.ativa,
+          },
+        ])
         .select()
-        .single()
+        .single();
 
-      if (recipeError) throw recipeError
+      if (recipeError) throw recipeError;
 
       // Create ingredients
-      const ingredients = data.ingredients.map(ingredient => ({
+      const ingredients = data.ingredients.map((ingredient) => ({
         recipe_id: recipe.id,
         product_id: ingredient.productId,
         quantidade: ingredient.quantidade,
         unidade: ingredient.unidade,
         observacoes: ingredient.observacoes,
-      }))
+      }));
 
       const { error: ingredientsError } = await supabase
         .from('recipe_ingredients')
-        .insert(ingredients)
+        .insert(ingredients);
 
-      if (ingredientsError) throw ingredientsError
+      if (ingredientsError) throw ingredientsError;
 
       // Trigger cost calculation
-      await supabase.rpc('update_recipe_cost', { recipe_uuid: recipe.id })
+      await supabase.rpc('update_recipe_cost', { recipe_uuid: recipe.id });
 
-      return recipe as Recipe
+      return recipe as Recipe;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all });
     },
-  })
+  });
 }
 
 export function useUpdateRecipe() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: RecipeInput }) => {
@@ -192,86 +183,83 @@ export function useUpdateRecipe() {
         })
         .eq('id', id)
         .select()
-        .single()
+        .single();
 
-      if (recipeError) throw recipeError
+      if (recipeError) throw recipeError;
 
       // Delete existing ingredients
       const { error: deleteError } = await supabase
         .from('recipe_ingredients')
         .delete()
-        .eq('recipe_id', id)
+        .eq('recipe_id', id);
 
-      if (deleteError) throw deleteError
+      if (deleteError) throw deleteError;
 
       // Create new ingredients
-      const ingredients = data.ingredients.map(ingredient => ({
+      const ingredients = data.ingredients.map((ingredient) => ({
         recipe_id: id,
         product_id: ingredient.productId,
         quantidade: ingredient.quantidade,
         unidade: ingredient.unidade,
         observacoes: ingredient.observacoes,
-      }))
+      }));
 
       const { error: ingredientsError } = await supabase
         .from('recipe_ingredients')
-        .insert(ingredients)
+        .insert(ingredients);
 
-      if (ingredientsError) throw ingredientsError
+      if (ingredientsError) throw ingredientsError;
 
       // Trigger cost calculation
-      await supabase.rpc('update_recipe_cost', { recipe_uuid: id })
+      await supabase.rpc('update_recipe_cost', { recipe_uuid: id });
 
-      return recipe as Recipe
+      return recipe as Recipe;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all })
-      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.detail(data.id) })
+      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.detail(data.id) });
     },
-  })
+  });
 }
 
 export function useDeleteRecipe() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('id', id)
+      const { error } = await supabase.from('recipes').delete().eq('id', id);
 
-      if (error) throw error
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: RECIPE_QUERY_KEYS.all });
     },
-  })
+  });
 }
 
 // src/app/(protected)/receitas/page.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Calculator, Clock, Users } from 'lucide-react'
-import { useRecipes } from '@/lib/queries/recipes'
-import { useDebounce } from '@/lib/hooks/useDebounce'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Search, Calculator, Clock, Users } from 'lucide-react';
+import { useRecipes } from '@/lib/queries/recipes';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { RecipeCard } from '@/components/recipes/RecipeCard'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { EmptyState } from '@/components/common/EmptyState'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RecipeCard } from '@/components/recipes/RecipeCard';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
 
 const RECIPE_CATEGORIES = [
   'Entradas',
@@ -284,40 +272,40 @@ const RECIPE_CATEGORIES = [
   'Saladas',
   'Sopas',
   'Acompanhamentos',
-]
+];
 
 export default function RecipesPage() {
-  const router = useRouter()
-  const [search, setSearch] = useState('')
+  const router = useRouter();
+  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     categoria: '',
     status: 'all' as 'active' | 'inactive' | 'all',
-  })
+  });
 
-  const debouncedSearch = useDebounce(search, 300)
-  
-  const { data: recipes, isLoading, error } = useRecipes({
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data: recipes,
+    isLoading,
+    error,
+  } = useRecipes({
     search: debouncedSearch,
     ...filters,
-  })
+  });
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-destructive">
-            Erro ao carregar receitas
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {error.message}
-          </p>
+          <p className="text-destructive text-lg font-medium">Erro ao carregar receitas</p>
+          <p className="text-muted-foreground mt-1 text-sm">{error.message}</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -332,7 +320,7 @@ export default function RecipesPage() {
         </div>
 
         <Button onClick={() => router.push('/receitas/nova')}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Nova Receita
         </Button>
       </div>
@@ -345,7 +333,7 @@ export default function RecipesPage() {
         <CardContent className="space-y-4">
           {/* Search */}
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Buscar receitas..."
               value={search}
@@ -380,7 +368,7 @@ export default function RecipesPage() {
               <label className="text-sm font-medium">Status</label>
               <Select
                 value={filters.status}
-                onValueChange={(value: 'active' | 'inactive' | 'all') => 
+                onValueChange={(value: 'active' | 'inactive' | 'all') =>
                   setFilters({ ...filters, status: value })
                 }
               >
@@ -401,7 +389,7 @@ export default function RecipesPage() {
       {/* Results */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {recipes?.length || 0} receitas encontradas
           </span>
         </div>
@@ -413,7 +401,7 @@ export default function RecipesPage() {
             description="Não há receitas que correspondam aos filtros selecionados."
             action={
               <Button onClick={() => router.push('/receitas/nova')}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Criar primeira receita
               </Button>
             }
@@ -427,116 +415,117 @@ export default function RecipesPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // src/components/recipes/RecipeCard.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Clock, 
-  Users, 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Clock,
+  Users,
   Calculator,
   TrendingUp,
   TrendingDown,
   ChefHat,
-  Eye
-} from 'lucide-react'
+  Eye,
+} from 'lucide-react';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useDeleteRecipe } from '@/lib/queries/recipes'
-import { useToast } from '@/hooks/use-toast'
-import { cn } from '@/lib/utils'
-import type { Recipe } from '@/lib/supabase/types'
+} from '@/components/ui/dropdown-menu';
+import { useDeleteRecipe } from '@/lib/queries/recipes';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import type { Recipe } from '@/lib/supabase/types';
 
 interface RecipeCardProps {
-  recipe: Recipe
+  recipe: Recipe;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isDeleting, setIsDeleting] = useState(false)
-  
-  const deleteRecipe = useDeleteRecipe()
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteRecipe = useDeleteRecipe();
 
   const handleEdit = () => {
-    router.push(`/receitas/${recipe.id}/editar`)
-  }
+    router.push(`/receitas/${recipe.id}/editar`);
+  };
 
   const handleView = () => {
-    router.push(`/receitas/${recipe.id}`)
-  }
+    router.push(`/receitas/${recipe.id}`);
+  };
 
   const handleDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await deleteRecipe.mutateAsync(recipe.id)
+      await deleteRecipe.mutateAsync(recipe.id);
       toast({
         title: 'Receita excluída',
         description: `${recipe.nome} foi excluída com sucesso.`,
-      })
+      });
     } catch (error: any) {
       toast({
         title: 'Erro ao excluir receita',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const formatCurrency = (value: number | null) => {
-    if (!value) return 'R$ 0,00'
+    if (!value) return 'R$ 0,00';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(value)
-  }
+    }).format(value);
+  };
 
   const getCMVColor = (cmv: number) => {
-    if (cmv <= 25) return 'text-green-600'
-    if (cmv <= 35) return 'text-yellow-600'
-    return 'text-red-600'
-  }
+    if (cmv <= 25) return 'text-green-600';
+    if (cmv <= 35) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
-  const cmvPercentage = recipe.preco_venda_sugerido && recipe.custo_total
-    ? (recipe.custo_total / recipe.preco_venda_sugerido) * 100
-    : 0
+  const cmvPercentage =
+    recipe.preco_venda_sugerido && recipe.custo_total
+      ? (recipe.custo_total / recipe.preco_venda_sugerido) * 100
+      : 0;
 
   return (
     <Card className="card-hover group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-              <ChefHat className="h-6 w-6 text-primary" />
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
+              <ChefHat className="text-primary h-6 w-6" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <Link
                 href={`/receitas/${recipe.id}`}
-                className="font-medium hover:text-primary transition-colors line-clamp-1"
+                className="hover:text-primary line-clamp-1 font-medium transition-colors"
               >
                 {recipe.nome}
               </Link>
               {recipe.descricao && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                   {recipe.descricao}
                 </p>
               )}
@@ -545,30 +534,30 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleView}>
-                <Eye className="h-4 w-4 mr-2" />
+                <Eye className="mr-2 h-4 w-4" />
                 Visualizar
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -578,7 +567,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
       <CardContent className="space-y-4">
         {/* Category and Status */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           {recipe.categoria && (
             <Badge variant="outline" className="text-xs">
               {recipe.categoria}
@@ -595,13 +584,13 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         <div className="grid grid-cols-2 gap-4 text-sm">
           {recipe.tempo_preparo && (
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="text-muted-foreground h-4 w-4" />
               <span>{recipe.tempo_preparo}min</span>
             </div>
           )}
           {recipe.rendimento_porcoes && (
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="text-muted-foreground h-4 w-4" />
               <span>{recipe.rendimento_porcoes} porções</span>
             </div>
           )}
@@ -610,26 +599,22 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         {/* Cost Info */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Custo Total</span>
-            <span className="font-medium">
-              {formatCurrency(recipe.custo_total)}
-            </span>
+            <span className="text-muted-foreground text-sm">Custo Total</span>
+            <span className="font-medium">{formatCurrency(recipe.custo_total)}</span>
           </div>
-          
+
           {recipe.preco_venda_sugerido && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Preço Sugerido</span>
-              <span className="font-medium">
-                {formatCurrency(recipe.preco_venda_sugerido)}
-              </span>
+              <span className="text-muted-foreground text-sm">Preço Sugerido</span>
+              <span className="font-medium">{formatCurrency(recipe.preco_venda_sugerido)}</span>
             </div>
           )}
 
           {cmvPercentage > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">CMV</span>
+              <span className="text-muted-foreground text-sm">CMV</span>
               <div className="flex items-center gap-1">
-                <span className={cn("font-medium", getCMVColor(cmvPercentage))}>
+                <span className={cn('font-medium', getCMVColor(cmvPercentage))}>
                   {cmvPercentage.toFixed(1)}%
                 </span>
                 {cmvPercentage <= 30 ? (
@@ -643,7 +628,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
           {recipe.rendimento_porcoes && recipe.custo_total && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Custo por Porção</span>
+              <span className="text-muted-foreground text-sm">Custo por Porção</span>
               <span className="font-medium">
                 {formatCurrency(recipe.custo_total / recipe.rendimento_porcoes)}
               </span>
@@ -653,7 +638,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
         {/* Profit Margin */}
         {recipe.margem_lucro_desejada && recipe.margem_lucro_desejada > 0 && (
-          <div className="pt-2 border-t">
+          <div className="border-t pt-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Margem Desejada</span>
               <span className="font-medium">{recipe.margem_lucro_desejada}%</span>
@@ -662,54 +647,50 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // src/app/(protected)/receitas/nova/page.tsx
-'use client'
+('use client');
 
-import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { RecipeForm } from '@/components/recipes/RecipeForm'
-import { useCreateRecipe } from '@/lib/queries/recipes'
-import { useToast } from '@/hooks/use-toast'
-import type { RecipeInput } from '@/lib/validations/recipe'
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RecipeForm } from '@/components/recipes/RecipeForm';
+import { useCreateRecipe } from '@/lib/queries/recipes';
+import { useToast } from '@/hooks/use-toast';
+import type { RecipeInput } from '@/lib/validations/recipe';
 
 export default function NovaReceitaPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const createRecipe = useCreateRecipe()
+  const router = useRouter();
+  const { toast } = useToast();
+  const createRecipe = useCreateRecipe();
 
   const handleSubmit = async (data: RecipeInput) => {
     try {
-      const recipe = await createRecipe.mutateAsync(data)
-      
+      const recipe = await createRecipe.mutateAsync(data);
+
       toast({
         title: 'Receita criada com sucesso!',
         description: `${recipe.nome} foi adicionada ao seu catálogo.`,
-      })
-      
-      router.push('/receitas')
+      });
+
+      router.push('/receitas');
     } catch (error: any) {
       toast({
         title: 'Erro ao criar receita',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -725,57 +706,55 @@ export default function NovaReceitaPage() {
         <CardHeader>
           <CardTitle>Informações da Receita</CardTitle>
           <CardDescription>
-            Preencha os dados da receita e adicione os ingredientes. O custo será calculado automaticamente.
+            Preencha os dados da receita e adicione os ingredientes. O custo será calculado
+            automaticamente.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <RecipeForm
-            onSubmit={handleSubmit}
-            isLoading={createRecipe.isPending}
-          />
+          <RecipeForm onSubmit={handleSubmit} isLoading={createRecipe.isPending} />
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // src/components/recipes/RecipeForm.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2, Calculator } from 'lucide-react'
+import { useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2, Calculator } from 'lucide-react';
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { useProducts } from '@/lib/queries/products'
-import { recipeSchema, type RecipeInput } from '@/lib/validations/recipe'
-import { ALL_UNITS } from '@/lib/constants/units'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useProducts } from '@/lib/queries/products';
+import { recipeSchema, type RecipeInput } from '@/lib/validations/recipe';
+import { ALL_UNITS } from '@/lib/constants/units';
 
 const RECIPE_CATEGORIES = [
   'Entradas',
-  'Pratos Principais', 
+  'Pratos Principais',
   'Sobremesas',
   'Bebidas',
   'Lanches',
@@ -784,19 +763,19 @@ const RECIPE_CATEGORIES = [
   'Saladas',
   'Sopas',
   'Acompanhamentos',
-]
+];
 
 interface RecipeFormProps {
-  initialData?: Partial<RecipeInput>
-  onSubmit: (data: RecipeInput) => Promise<void>
-  isLoading?: boolean
+  initialData?: Partial<RecipeInput>;
+  onSubmit: (data: RecipeInput) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps) {
-  const [totalCost, setTotalCost] = useState(0)
-  const [suggestedPrice, setSuggestedPrice] = useState(0)
-  
-  const { data: products } = useProducts({ status: 'active' })
+  const [totalCost, setTotalCost] = useState(0);
+  const [suggestedPrice, setSuggestedPrice] = useState(0);
+
+  const { data: products } = useProducts({ status: 'active' });
 
   const form = useForm<RecipeInput>({
     resolver: zodResolver(recipeSchema),
@@ -815,46 +794,46 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
           quantidade: 1,
           unidade: 'un',
           observacoes: '',
-        }
+        },
       ],
       ...initialData,
     },
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'ingredients',
-  })
+  });
 
   // Calculate costs when ingredients change
-  const watchedIngredients = form.watch('ingredients')
-  const watchedPorcoes = form.watch('rendimentoPorcoes') || 1
-  const watchedMargem = form.watch('margemLucroDesejada') || 0
+  const watchedIngredients = form.watch('ingredients');
+  const watchedPorcoes = form.watch('rendimentoPorcoes') || 1;
+  const watchedMargem = form.watch('margemLucroDesejada') || 0;
 
   React.useEffect(() => {
-    if (!products || !watchedIngredients) return
+    if (!products || !watchedIngredients) return;
 
-    let cost = 0
+    let cost = 0;
     watchedIngredients.forEach((ingredient) => {
-      const product = products.find(p => p.id === ingredient.productId)
+      const product = products.find((p) => p.id === ingredient.productId);
       if (product && ingredient.quantidade) {
-        cost += ingredient.quantidade * product.preco_atual
+        cost += ingredient.quantidade * product.preco_atual;
       }
-    })
+    });
 
-    setTotalCost(cost)
+    setTotalCost(cost);
 
     // Calculate suggested price based on margin
     if (watchedMargem > 0) {
-      const price = cost / (1 - watchedMargem / 100)
-      setSuggestedPrice(price)
-      form.setValue('precoVendaSugerido', Number(price.toFixed(2)))
+      const price = cost / (1 - watchedMargem / 100);
+      setSuggestedPrice(price);
+      form.setValue('precoVendaSugerido', Number(price.toFixed(2)));
     }
-  }, [watchedIngredients, products, watchedMargem, form])
+  }, [watchedIngredients, products, watchedMargem, form]);
 
   const handleSubmit = async (data: RecipeInput) => {
-    await onSubmit(data)
-  }
+    await onSubmit(data);
+  };
 
   const addIngredient = () => {
     append({
@@ -862,27 +841,27 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
       quantidade: 1,
       unidade: 'un',
       observacoes: '',
-    })
-  }
+    });
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(value)
-  }
+    }).format(value);
+  };
 
   const getCMVPercentage = () => {
-    const price = form.watch('precoVendaSugerido') || 0
-    if (price <= 0) return 0
-    return (totalCost / price) * 100
-  }
+    const price = form.watch('precoVendaSugerido') || 0;
+    if (price <= 0) return 0;
+    return (totalCost / price) * 100;
+  };
 
   const getCMVColor = (cmv: number) => {
-    if (cmv <= 25) return 'text-green-600'
-    if (cmv <= 35) return 'text-yellow-600' 
-    return 'text-red-600'
-  }
+    if (cmv <= 25) return 'text-green-600';
+    if (cmv <= 35) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
   return (
     <Form {...form}>
@@ -890,7 +869,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
         {/* Basic Information */}
         <div className="space-y-6">
           <h3 className="text-lg font-medium">Informações Básicas</h3>
-          
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -899,11 +878,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
                 <FormItem>
                   <FormLabel>Nome da receita *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Ex: Pizza Margherita"
-                      {...field}
-                      disabled={isLoading}
-                    />
+                    <Input placeholder="Ex: Pizza Margherita" {...field} disabled={isLoading} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -976,7 +951,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
                         onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
                         disabled={isLoading}
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      <span className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 text-sm">
                         min
                       </span>
                     </div>
@@ -1002,7 +977,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                         disabled={isLoading}
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      <span className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 text-sm">
                         porções
                       </span>
                     </div>
@@ -1030,14 +1005,12 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                         disabled={isLoading}
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      <span className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 text-sm">
                         %
                       </span>
                     </div>
                   </FormControl>
-                  <FormDescription>
-                    Margem de lucro desejada para cálculo do preço
-                  </FormDescription>
+                  <FormDescription>Margem de lucro desejada para cálculo do preço</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -1056,7 +1029,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
               onClick={addIngredient}
               disabled={isLoading}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Adicionar ingrediente
             </Button>
           </div>
@@ -1086,9 +1059,9 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
                               <SelectContent>
                                 {products?.map((product) => (
                                   <SelectItem key={product.id} value={product.id}>
-                                    <div className="flex items-center justify-between w-full">
+                                    <div className="flex w-full items-center justify-between">
                                       <span>{product.nome}</span>
-                                      <span className="text-sm text-muted-foreground ml-2">
+                                      <span className="text-muted-foreground ml-2 text-sm">
                                         {formatCurrency(product.preco_atual)}/{product.unidade}
                                       </span>
                                     </div>
@@ -1202,21 +1175,15 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  Custo Total
-                </label>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(totalCost)}
-                </p>
+                <label className="text-muted-foreground text-sm font-medium">Custo Total</label>
+                <p className="text-2xl font-bold">{formatCurrency(totalCost)}</p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-muted-foreground text-sm font-medium">
                   Custo por Porção
                 </label>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(totalCost / watchedPorcoes)}
-                </p>
+                <p className="text-2xl font-bold">{formatCurrency(totalCost / watchedPorcoes)}</p>
               </div>
 
               <div className="space-y-2">
@@ -1243,26 +1210,35 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  CMV
-                </label>
+                <label className="text-muted-foreground text-sm font-medium">CMV</label>
                 <div className="flex items-center gap-2">
                   <p className={`text-2xl font-bold ${getCMVColor(getCMVPercentage())}`}>
                     {getCMVPercentage().toFixed(1)}%
                   </p>
-                  <Badge 
-                    variant={getCMVPercentage() <= 30 ? 'success' : getCMVPercentage() <= 40 ? 'warning' : 'destructive'}
+                  <Badge
+                    variant={
+                      getCMVPercentage() <= 30
+                        ? 'success'
+                        : getCMVPercentage() <= 40
+                          ? 'warning'
+                          : 'destructive'
+                    }
                   >
-                    {getCMVPercentage() <= 30 ? 'Excelente' : getCMVPercentage() <= 40 ? 'Bom' : 'Alto'}
+                    {getCMVPercentage() <= 30
+                      ? 'Excelente'
+                      : getCMVPercentage() <= 40
+                        ? 'Bom'
+                        : 'Alto'}
                   </Badge>
                 </div>
               </div>
             </div>
 
             {watchedMargem > 0 && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+              <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Preço sugerido com {watchedMargem}% de margem:</strong> {formatCurrency(suggestedPrice)}
+                  <strong>Preço sugerido com {watchedMargem}% de margem:</strong>{' '}
+                  {formatCurrency(suggestedPrice)}
                 </p>
               </div>
             )}
@@ -1284,9 +1260,7 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>Receita ativa</FormLabel>
-                <FormDescription>
-                  Receitas inativas não aparecem nos relatórios
-                </FormDescription>
+                <FormDescription>Receitas inativas não aparecem nos relatórios</FormDescription>
               </div>
             </FormItem>
           )}
@@ -1294,23 +1268,14 @@ export function RecipeForm({ initialData, onSubmit, isLoading }: RecipeFormProps
 
         {/* Submit buttons */}
         <div className="flex gap-4 pt-4">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 sm:flex-none"
-          >
+          <Button type="submit" disabled={isLoading} className="flex-1 sm:flex-none">
             {isLoading ? 'Salvando...' : initialData ? 'Atualizar receita' : 'Criar receita'}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isLoading}>
             Limpar
           </Button>
         </div>
       </form>
     </Form>
-  )
+  );
 }

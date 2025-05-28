@@ -53,10 +53,12 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 
   /* Scrollbar personalizada */
@@ -84,7 +86,7 @@
   }
 
   *:focus-visible {
-    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
+    @apply ring-ring ring-offset-background ring-2 ring-offset-2;
   }
 
   /* Smooth scroll */
@@ -106,7 +108,7 @@
     .no-print {
       display: none !important;
     }
-    
+
     * {
       color-adjust: exact;
       -webkit-print-color-adjust: exact;
@@ -122,7 +124,7 @@
 
   /* Loading skeleton */
   .skeleton {
-    @apply animate-pulse bg-muted;
+    @apply bg-muted animate-pulse;
   }
 
   /* Badge variants */
@@ -189,7 +191,7 @@
   }
 
   .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:ring-ring;
+    @apply border-input bg-background hover:bg-accent hover:text-accent-foreground focus:ring-ring border;
   }
 
   .btn-ghost {
@@ -202,7 +204,7 @@
 
   /* Sidebar navigation */
   .sidebar-item {
-    @apply flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground;
+    @apply text-muted-foreground hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors;
   }
 
   .sidebar-item.active {
@@ -219,19 +221,19 @@
   }
 
   .form-input {
-    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+    @apply border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .form-textarea {
-    @apply flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+    @apply border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[60px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .form-error {
-    @apply text-sm font-medium text-destructive;
+    @apply text-destructive text-sm font-medium;
   }
 
   .form-description {
-    @apply text-sm text-muted-foreground;
+    @apply text-muted-foreground text-sm;
   }
 }
 

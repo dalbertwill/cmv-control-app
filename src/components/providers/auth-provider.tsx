@@ -1,109 +1,90 @@
-// src/components/providers/auth-provider.tsx
-"use client"
+'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
-
-interface User {
-  id: string
-  email: string
-  name: string
-  // Adicione outros campos conforme necessário
-}
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import type { Profile } from '@/lib/supabase/types';
 
 interface AuthContextType {
-  user: User | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-  register: (email: string, password: string, name: string) => Promise<void>
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: string | null }>;
+  signOut: () => Promise<void>;
+  updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // Verificar se há um usuário salvo no localStorage ou verificar token
-    const checkAuth = async () => {
-      try {
-        const savedUser = localStorage.getItem('user')
-        if (savedUser) {
-          setUser(JSON.parse(savedUser))
-        }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error)
-      } finally {
-        setLoading(false)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(data);
+      } else {
+        setProfile(null);
       }
-    }
+      setLoading(false);
+    });
 
-    checkAuth()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
-  const login = async (email: string, password: string) => {
-    try {
-      // Aqui você faria a chamada para sua API de login
-      // Por enquanto, vamos simular um login
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0] || 'User',
-      }
-      
-      setUser(mockUser)
-      localStorage.setItem('user', JSON.stringify(mockUser))
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Erro ao fazer login:', error)
-      throw error
-    }
-  }
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message || null };
+  };
 
-  const logout = async () => {
-    try {
-      setUser(null)
-      localStorage.removeItem('user')
-      router.push('/login')
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
-      throw error
-    }
-  }
+  const signUp = async (email: string, password: string, metadata?: any) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata },
+    });
+    return { error: error?.message || null };
+  };
 
-  const register = async (email: string, password: string, name: string) => {
-    try {
-      // Aqui você faria a chamada para sua API de registro
-      // Por enquanto, vamos simular um registro
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: name || email.split('@')[0] || 'User',
-      }
-      
-      setUser(mockUser)
-      localStorage.setItem('user', JSON.stringify(mockUser))
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Erro ao fazer registro:', error)
-      throw error
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!user) return { error: 'No user' };
+    const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+
+    if (!error) {
+      setProfile((prev) => (prev ? { ...prev, ...updates } : null));
     }
-  }
+    return { error: error?.message || null };
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider
+      value={{ user, profile, loading, signIn, signUp, signOut, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth deve ser usado dentro de AuthProvider')
-  }
-  return context
-}
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};

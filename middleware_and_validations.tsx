@@ -1,21 +1,30 @@
+import { z } from 'zod';
+
 // middleware.ts (na raiz do projeto)
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import type { Database } from '@/lib/supabase/types'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import type { Database } from '@/lib/supabase/types';
 
 // Rotas que requerem autenticação
-const protectedRoutes = ['/dashboard', '/produtos', '/receitas', '/compras', '/relatorios', '/configuracoes']
+const protectedRoutes = [
+  '/dashboard',
+  '/produtos',
+  '/receitas',
+  '/compras',
+  '/relatorios',
+  '/configuracoes',
+];
 
 // Rotas que redirecionam usuários autenticados
-const authRoutes = ['/login', '/register', '/forgot-password']
+const authRoutes = ['/login', '/register', '/forgot-password'];
 
 // Rotas públicas (não requerem autenticação)
-const publicRoutes = ['/', '/sobre', '/contato', '/termos', '/privacidade']
+const publicRoutes = ['/', '/sobre', '/contato', '/termos', '/privacidade'];
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const pathname = req.nextUrl.pathname
+  const res = NextResponse.next();
+  const pathname = req.nextUrl.pathname;
 
   // Pular middleware para arquivos estáticos e API routes específicas
   if (
@@ -23,53 +32,56 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/api/webhooks') ||
     pathname.includes('.') // arquivos estáticos
   ) {
-    return res
+    return res;
   }
 
   try {
     // Criar cliente Supabase para middleware
-    const supabase = createMiddlewareClient<Database>({ req, res })
-    
+    const supabase = createMiddlewareClient<Database>({ req, res });
+
     // Verificar sessão atual
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
 
     // Log para debug (remover em produção)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Middleware - Path: ${pathname}, Authenticated: ${!!session?.user}`)
+      console.log(`Middleware - Path: ${pathname}, Authenticated: ${!!session?.user}`);
     }
 
     // Se há erro na verificação da sessão
     if (error) {
-      console.error('Middleware auth error:', error)
+      console.error('Middleware auth error:', error);
       // Redirecionar para login se estiver tentando acessar rota protegida
-      if (protectedRoutes.some(route => pathname.startsWith(route))) {
-        return NextResponse.redirect(new URL('/login', req.url))
+      if (protectedRoutes.some((route) => pathname.startsWith(route))) {
+        return NextResponse.redirect(new URL('/login', req.url));
       }
-      return res
+      return res;
     }
 
-    const isAuthenticated = !!session?.user
+    const isAuthenticated = !!session?.user;
 
     // Verificar se é uma rota protegida
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-    
+    const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
     // Verificar se é uma rota de autenticação
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+    const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
     // Verificar se é rota pública
-    const isPublicRoute = publicRoutes.includes(pathname) || pathname === '/'
+    const isPublicRoute = publicRoutes.includes(pathname) || pathname === '/';
 
     // Lógica de redirecionamento
     if (isProtectedRoute && !isAuthenticated) {
       // Usuário não autenticado tentando acessar rota protegida
-      const loginUrl = new URL('/login', req.url)
-      loginUrl.searchParams.set('redirectTo', pathname)
-      return NextResponse.redirect(loginUrl)
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
     if (isAuthRoute && isAuthenticated) {
       // Usuário autenticado tentando acessar rotas de auth
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+      return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
     // Verificar se o usuário completou o onboarding
@@ -79,33 +91,33 @@ export async function middleware(req: NextRequest) {
           .from('profiles')
           .select('onboarding_completed')
           .eq('id', session.user.id)
-          .single()
+          .single();
 
         // Se não completou onboarding e não está na página de onboarding
         if (profile && !profile.onboarding_completed && !pathname.startsWith('/onboarding')) {
-          return NextResponse.redirect(new URL('/onboarding', req.url))
+          return NextResponse.redirect(new URL('/onboarding', req.url));
         }
 
         // Se completou onboarding mas está na página de onboarding
         if (profile && profile.onboarding_completed && pathname.startsWith('/onboarding')) {
-          return NextResponse.redirect(new URL('/dashboard', req.url))
+          return NextResponse.redirect(new URL('/dashboard', req.url));
         }
       } catch (profileError) {
-        console.error('Error checking profile:', profileError)
+        console.error('Error checking profile:', profileError);
         // Se não conseguir verificar perfil, permitir acesso mas não redirecionar
       }
     }
 
     // Redirecionar raiz para dashboard se autenticado
     if (pathname === '/' && isAuthenticated) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+      return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    return res
+    return res;
   } catch (error) {
-    console.error('Middleware error:', error)
+    console.error('Middleware error:', error);
     // Em caso de erro, permitir acesso mas logar o problema
-    return res
+    return res;
   }
 }
 
@@ -120,10 +132,9 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};
 
 // src/lib/validations/auth.ts
-import { z } from 'zod'
 
 export const loginSchema = z.object({
   email: z
@@ -134,67 +145,70 @@ export const loginSchema = z.object({
     .string({ required_error: 'Senha é obrigatória' })
     .min(6, 'Senha deve ter pelo menos 6 caracteres')
     .max(100, 'Senha muito longa'),
-})
+});
 
-export const registerSchema = z.object({
-  email: z
-    .string({ required_error: 'Email é obrigatório' })
-    .email('Email inválido')
-    .min(1, 'Email é obrigatório'),
-  password: z
-    .string({ required_error: 'Senha é obrigatória' })
-    .min(6, 'Senha deve ter pelo menos 6 caracteres')
-    .max(100, 'Senha muito longa')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número'
-    ),
-  confirmPassword: z.string({ required_error: 'Confirmação de senha é obrigatória' }),
-  nomeCompleto: z
-    .string({ required_error: 'Nome completo é obrigatório' })
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome muito longo'),
-  nomeRestaurante: z
-    .string({ required_error: 'Nome do restaurante é obrigatório' })
-    .min(2, 'Nome do restaurante deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome muito longo'),
-  termsAccepted: z
-    .boolean({ required_error: 'Você deve aceitar os termos' })
-    .refine((val) => val === true, 'Você deve aceitar os termos de uso'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Senhas não coincidem',
-  path: ['confirmPassword'],
-})
+export const registerSchema = z
+  .object({
+    email: z
+      .string({ required_error: 'Email é obrigatório' })
+      .email('Email inválido')
+      .min(1, 'Email é obrigatório'),
+    password: z
+      .string({ required_error: 'Senha é obrigatória' })
+      .min(6, 'Senha deve ter pelo menos 6 caracteres')
+      .max(100, 'Senha muito longa')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número',
+      ),
+    confirmPassword: z.string({ required_error: 'Confirmação de senha é obrigatória' }),
+    nomeCompleto: z
+      .string({ required_error: 'Nome completo é obrigatório' })
+      .min(2, 'Nome deve ter pelo menos 2 caracteres')
+      .max(100, 'Nome muito longo'),
+    nomeRestaurante: z
+      .string({ required_error: 'Nome do restaurante é obrigatório' })
+      .min(2, 'Nome do restaurante deve ter pelo menos 2 caracteres')
+      .max(100, 'Nome muito longo'),
+    termsAccepted: z
+      .boolean({ required_error: 'Você deve aceitar os termos' })
+      .refine((val) => val === true, 'Você deve aceitar os termos de uso'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
 export const forgotPasswordSchema = z.object({
   email: z
     .string({ required_error: 'Email é obrigatório' })
     .email('Email inválido')
     .min(1, 'Email é obrigatório'),
-})
+});
 
-export const resetPasswordSchema = z.object({
-  password: z
-    .string({ required_error: 'Nova senha é obrigatória' })
-    .min(6, 'Senha deve ter pelo menos 6 caracteres')
-    .max(100, 'Senha muito longa')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número'
-    ),
-  confirmPassword: z.string({ required_error: 'Confirmação de senha é obrigatória' }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Senhas não coincidem',
-  path: ['confirmPassword'],
-})
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string({ required_error: 'Nova senha é obrigatória' })
+      .min(6, 'Senha deve ter pelo menos 6 caracteres')
+      .max(100, 'Senha muito longa')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número',
+      ),
+    confirmPassword: z.string({ required_error: 'Confirmação de senha é obrigatória' }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
-export type LoginInput = z.infer<typeof loginSchema>
-export type RegisterInput = z.infer<typeof registerSchema>
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 // src/lib/validations/profile.ts
-import { z } from 'zod'
 
 export const profileSchema = z.object({
   nomeCompleto: z
@@ -205,9 +219,7 @@ export const profileSchema = z.object({
     .string({ required_error: 'Nome do restaurante é obrigatório' })
     .min(2, 'Nome do restaurante deve ter pelo menos 2 caracteres')
     .max(100, 'Nome muito longo'),
-  email: z
-    .string({ required_error: 'Email é obrigatório' })
-    .email('Email inválido'),
+  email: z.string({ required_error: 'Email é obrigatório' }).email('Email inválido'),
   metaCmvMensal: z
     .number({ required_error: 'Meta de CMV é obrigatória' })
     .min(1, 'Meta deve ser maior que 0%')
@@ -218,7 +230,7 @@ export const profileSchema = z.object({
   tema: z.enum(['light', 'dark', 'system']).optional(),
   notificacoesAtivas: z.boolean().optional(),
   backupAutomatico: z.boolean().optional(),
-})
+});
 
 export const onboardingProfileSchema = z.object({
   nomeCompleto: z
@@ -237,13 +249,12 @@ export const onboardingProfileSchema = z.object({
   tipoRestaurante: z
     .string({ required_error: 'Tipo de restaurante é obrigatório' })
     .min(1, 'Selecione o tipo de restaurante'),
-})
+});
 
-export type ProfileInput = z.infer<typeof profileSchema>
-export type OnboardingProfileInput = z.infer<typeof onboardingProfileSchema>
+export type ProfileInput = z.infer<typeof profileSchema>;
+export type OnboardingProfileInput = z.infer<typeof onboardingProfileSchema>;
 
 // src/lib/validations/product.ts
-import { z } from 'zod'
 
 export const productSchema = z.object({
   nome: z
@@ -254,25 +265,15 @@ export const productSchema = z.object({
   codigoInterno: z.string().optional(),
   categoryId: z.string().optional(),
   supplierId: z.string().optional(),
-  unidade: z
-    .string({ required_error: 'Unidade é obrigatória' })
-    .min(1, 'Selecione uma unidade'),
+  unidade: z.string({ required_error: 'Unidade é obrigatória' }).min(1, 'Selecione uma unidade'),
   precoAtual: z
     .number({ required_error: 'Preço é obrigatório' })
     .min(0.01, 'Preço deve ser maior que zero'),
-  estoqueAtual: z
-    .number()
-    .min(0, 'Estoque não pode ser negativo')
-    .optional()
-    .default(0),
-  estoqueMinimo: z
-    .number()
-    .min(0, 'Estoque mínimo não pode ser negativo')
-    .optional()
-    .default(0),
+  estoqueAtual: z.number().min(0, 'Estoque não pode ser negativo').optional().default(0),
+  estoqueMinimo: z.number().min(0, 'Estoque mínimo não pode ser negativo').optional().default(0),
   dataValidade: z.string().optional().nullable(),
   ativo: z.boolean().optional().default(true),
-})
+});
 
 export const categorySchema = z.object({
   nome: z
@@ -286,7 +287,7 @@ export const categorySchema = z.object({
     .default('#3B82F6'),
   descricao: z.string().optional(),
   ativo: z.boolean().optional().default(true),
-})
+});
 
 export const supplierSchema = z.object({
   nome: z
@@ -301,18 +302,18 @@ export const supplierSchema = z.object({
     .string()
     .optional()
     .refine((val) => {
-      if (!val) return true
+      if (!val) return true;
       // Validação básica de CNPJ (apenas formato)
-      const cnpj = val.replace(/\D/g, '')
-      return cnpj.length === 14
+      const cnpj = val.replace(/\D/g, '');
+      return cnpj.length === 14;
     }, 'CNPJ deve ter 14 dígitos'),
   observacoes: z.string().optional(),
   ativo: z.boolean().optional().default(true),
-})
+});
 
-export type ProductInput = z.infer<typeof productSchema>
-export type CategoryInput = z.infer<typeof categorySchema>
-export type SupplierInput = z.infer<typeof supplierSchema>
+export type ProductInput = z.infer<typeof productSchema>;
+export type CategoryInput = z.infer<typeof categorySchema>;
+export type SupplierInput = z.infer<typeof supplierSchema>;
 
 // src/lib/constants/app.ts
 export const APP_CONFIG = {
@@ -322,7 +323,7 @@ export const APP_CONFIG = {
   author: 'CMV Control Team',
   email: 'contato@cmvcontrol.app',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-} as const
+} as const;
 
 export const ROUTES = {
   public: {
@@ -355,7 +356,7 @@ export const ROUTES = {
     firstRecipe: '/onboarding/first-recipe',
     complete: '/onboarding/complete',
   },
-} as const
+} as const;
 
 export const TOAST_MESSAGES = {
   success: {
@@ -374,7 +375,7 @@ export const TOAST_MESSAGES = {
     notFound: 'Item não encontrado.',
     validation: 'Dados inválidos. Verifique os campos.',
   },
-} as const
+} as const;
 
 export const DEFAULT_VALUES = {
   profile: {
@@ -398,7 +399,7 @@ export const DEFAULT_VALUES = {
   supplier: {
     ativo: true,
   },
-} as const
+} as const;
 
 // src/lib/constants/units.ts
 export const UNITS = {
@@ -418,13 +419,9 @@ export const UNITS = {
     { value: 'pct', label: 'Pacote (pct)', factor: 1 },
     { value: 'sc', label: 'Saco (sc)', factor: 1 },
   ],
-} as const
+} as const;
 
-export const ALL_UNITS = [
-  ...UNITS.peso,
-  ...UNITS.volume,
-  ...UNITS.unidade,
-] as const
+export const ALL_UNITS = [...UNITS.peso, ...UNITS.volume, ...UNITS.unidade] as const;
 
 export const RESTAURANT_TYPES = [
   { value: 'restaurante', label: 'Restaurante Tradicional' },
@@ -439,4 +436,4 @@ export const RESTAURANT_TYPES = [
   { value: 'bar', label: 'Bar/Pub' },
   { value: 'cafeteria', label: 'Cafeteria' },
   { value: 'outro', label: 'Outro' },
-] as const
+] as const;

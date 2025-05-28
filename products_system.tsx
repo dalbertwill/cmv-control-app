@@ -1,8 +1,8 @@
 // src/lib/queries/products.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, executeQuery } from '@/lib/supabase/client'
-import type { Product, ProductWithCategory, Category, Supplier } from '@/lib/supabase/types'
-import type { ProductInput, CategoryInput, SupplierInput } from '@/lib/validations/product'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase, executeQuery } from '@/lib/supabase/client';
+import type { Product, ProductWithCategory, Category, Supplier } from '@/lib/supabase/types';
+import type { ProductInput, CategoryInput, SupplierInput } from '@/lib/validations/product';
 
 // Query keys
 export const PRODUCT_QUERY_KEYS = {
@@ -13,57 +13,61 @@ export const PRODUCT_QUERY_KEYS = {
   detail: (id: string) => [...PRODUCT_QUERY_KEYS.details(), id] as const,
   categories: ['categories'] as const,
   suppliers: ['suppliers'] as const,
-}
+};
 
 // Products queries
-export function useProducts(filters: {
-  search?: string
-  category?: string
-  supplier?: string
-  status?: 'active' | 'inactive' | 'all'
-  lowStock?: boolean
-} = {}) {
+export function useProducts(
+  filters: {
+    search?: string;
+    category?: string;
+    supplier?: string;
+    status?: 'active' | 'inactive' | 'all';
+    lowStock?: boolean;
+  } = {},
+) {
   return useQuery({
     queryKey: PRODUCT_QUERY_KEYS.list(filters),
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`
+        .select(
+          `
           *,
           category:categories(id, nome, cor),
           supplier:suppliers(id, nome)
-        `)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .order('created_at', { ascending: false });
 
       // Apply filters
       if (filters.search) {
-        query = query.ilike('nome', `%${filters.search}%`)
+        query = query.ilike('nome', `%${filters.search}%`);
       }
 
       if (filters.category) {
-        query = query.eq('category_id', filters.category)
+        query = query.eq('category_id', filters.category);
       }
 
       if (filters.supplier) {
-        query = query.eq('supplier_id', filters.supplier)
+        query = query.eq('supplier_id', filters.supplier);
       }
 
       if (filters.status === 'active') {
-        query = query.eq('ativo', true)
+        query = query.eq('ativo', true);
       } else if (filters.status === 'inactive') {
-        query = query.eq('ativo', false)
+        query = query.eq('ativo', false);
       }
 
       if (filters.lowStock) {
-        query = query.or('estoque_atual.lte.estoque_minimo,estoque_atual.is.null')
+        query = query.or('estoque_atual.lte.estoque_minimo,estoque_atual.is.null');
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
-      if (error) throw error
-      return data as ProductWithCategory[]
+      if (error) throw error;
+      return data as ProductWithCategory[];
     },
-  })
+  });
 }
 
 export function useProduct(id: string) {
@@ -72,19 +76,21 @@ export function useProduct(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`
+        .select(
+          `
           *,
           category:categories(id, nome, cor),
           supplier:suppliers(id, nome)
-        `)
+        `,
+        )
         .eq('id', id)
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as ProductWithCategory
+      if (error) throw error;
+      return data as ProductWithCategory;
     },
     enabled: !!id,
-  })
+  });
 }
 
 export function useCategories() {
@@ -95,12 +101,12 @@ export function useCategories() {
         .from('categories')
         .select('*')
         .eq('ativo', true)
-        .order('nome')
+        .order('nome');
 
-      if (error) throw error
-      return data as Category[]
+      if (error) throw error;
+      return data as Category[];
     },
-  })
+  });
 }
 
 export function useSuppliers() {
@@ -111,17 +117,17 @@ export function useSuppliers() {
         .from('suppliers')
         .select('*')
         .eq('ativo', true)
-        .order('nome')
+        .order('nome');
 
-      if (error) throw error
-      return data as Supplier[]
+      if (error) throw error;
+      return data as Supplier[];
     },
-  })
+  });
 }
 
 // Mutations
 export function useCreateProduct() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: ProductInput) => {
@@ -129,19 +135,19 @@ export function useCreateProduct() {
         .from('products')
         .insert([data])
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return result as Product
+      if (error) throw error;
+      return result as Product;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all });
     },
-  })
+  });
 }
 
 export function useUpdateProduct() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProductInput> }) => {
@@ -150,39 +156,36 @@ export function useUpdateProduct() {
         .update(data)
         .eq('id', id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return result as Product
+      if (error) throw error;
+      return result as Product;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all })
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.detail(data.id) })
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.detail(data.id) });
     },
-  })
+  });
 }
 
 export function useDeleteProduct() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id)
+      const { error } = await supabase.from('products').delete().eq('id', id);
 
-      if (error) throw error
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.all });
     },
-  })
+  });
 }
 
 // Category mutations
 export function useCreateCategory() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: CategoryInput) => {
@@ -190,20 +193,20 @@ export function useCreateCategory() {
         .from('categories')
         .insert([data])
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return result as Category
+      if (error) throw error;
+      return result as Category;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.categories })
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.categories });
     },
-  })
+  });
 }
 
 // Supplier mutations
 export function useCreateSupplier() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: SupplierInput) => {
@@ -211,94 +214,94 @@ export function useCreateSupplier() {
         .from('suppliers')
         .insert([data])
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return result as Supplier
+      if (error) throw error;
+      return result as Supplier;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.suppliers })
+      queryClient.invalidateQueries({ queryKey: PRODUCT_QUERY_KEYS.suppliers });
     },
-  })
+  });
 }
 
 // src/app/(protected)/produtos/page.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Download, Upload } from 'lucide-react'
-import { useProducts, useCategories, useSuppliers } from '@/lib/queries/products'
-import { useDebounce } from '@/lib/hooks/useDebounce'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Search, Filter, Download, Upload } from 'lucide-react';
+import { useProducts, useCategories, useSuppliers } from '@/lib/queries/products';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { ProductCard } from '@/components/products/ProductCard'
-import { ProductFilters } from '@/components/products/ProductFilters'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { EmptyState } from '@/components/common/EmptyState'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ProductCard } from '@/components/products/ProductCard';
+import { ProductFilters } from '@/components/products/ProductFilters';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
 
 export default function ProductsPage() {
-  const router = useRouter()
-  const [search, setSearch] = useState('')
+  const router = useRouter();
+  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     category: '',
     supplier: '',
-    status: 'all' as 'active' | 'inactive' | 'all', 
+    status: 'all' as 'active' | 'inactive' | 'all',
     lowStock: false,
-  })
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  });
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const debouncedSearch = useDebounce(search, 300)
-  
-  const { data: products, isLoading, error } = useProducts({
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data: products,
+    isLoading,
+    error,
+  } = useProducts({
     search: debouncedSearch,
     ...filters,
-  })
+  });
 
-  const { data: categories } = useCategories()
-  const { data: suppliers } = useSuppliers()
+  const { data: categories } = useCategories();
+  const { data: suppliers } = useSuppliers();
 
   const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters)
-  }
+    setFilters(newFilters);
+  };
 
   const handleExport = () => {
     // TODO: Implement export functionality
-    console.log('Exporting products...')
-  }
+    console.log('Exporting products...');
+  };
 
   const handleImport = () => {
     // TODO: Implement import functionality
-    console.log('Importing products...')
-  }
+    console.log('Importing products...');
+  };
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-destructive">
-            Erro ao carregar produtos
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {error.message}
-          </p>
+          <p className="text-destructive text-lg font-medium">Erro ao carregar produtos</p>
+          <p className="text-muted-foreground mt-1 text-sm">{error.message}</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -314,15 +317,15 @@ export default function ProductsPage() {
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" onClick={handleImport}>
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="mr-2 h-4 w-4" />
             Importar
           </Button>
           <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
           <Button onClick={() => router.push('/produtos/novo')}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Novo Produto
           </Button>
         </div>
@@ -336,7 +339,7 @@ export default function ProductsPage() {
         <CardContent className="space-y-4">
           {/* Search */}
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Buscar produtos..."
               value={search}
@@ -360,12 +363,10 @@ export default function ProductsPage() {
         {/* Results header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               {products?.length || 0} produtos encontrados
             </span>
-            {filters.lowStock && (
-              <Badge variant="warning">Estoque baixo</Badge>
-            )}
+            {filters.lowStock && <Badge variant="warning">Estoque baixo</Badge>}
           </div>
 
           <div className="flex items-center gap-2">
@@ -388,7 +389,7 @@ export default function ProductsPage() {
             description="Não há produtos que correspondam aos filtros selecionados."
             action={
               <Button onClick={() => router.push('/produtos/novo')}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Criar primeiro produto
               </Button>
             }
@@ -396,118 +397,114 @@ export default function ProductsPage() {
         ) : (
           <div className={viewMode === 'grid' ? 'grid-responsive' : 'space-y-4'}>
             {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                viewMode={viewMode}
-              />
+              <ProductCard key={product.id} product={product} viewMode={viewMode} />
             ))}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // src/components/products/ProductCard.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Package, 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Package,
   AlertTriangle,
   TrendingUp,
-  TrendingDown
-} from 'lucide-react'
+  TrendingDown,
+} from 'lucide-react';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useDeleteProduct } from '@/lib/queries/products'
-import { useToast } from '@/hooks/use-toast'
-import { cn } from '@/lib/utils'
-import type { ProductWithCategory } from '@/lib/supabase/types'
+} from '@/components/ui/dropdown-menu';
+import { useDeleteProduct } from '@/lib/queries/products';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import type { ProductWithCategory } from '@/lib/supabase/types';
 
 interface ProductCardProps {
-  product: ProductWithCategory
-  viewMode: 'grid' | 'list'
+  product: ProductWithCategory;
+  viewMode: 'grid' | 'list';
 }
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isDeleting, setIsDeleting] = useState(false)
-  
-  const deleteProduct = useDeleteProduct()
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteProduct = useDeleteProduct();
 
   const handleEdit = () => {
-    router.push(`/produtos/${product.id}/editar`)
-  }
+    router.push(`/produtos/${product.id}/editar`);
+  };
 
   const handleDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await deleteProduct.mutateAsync(product.id)
+      await deleteProduct.mutateAsync(product.id);
       toast({
         title: 'Produto excluído',
         description: `${product.nome} foi excluído com sucesso.`,
-      })
+      });
     } catch (error: any) {
       toast({
         title: 'Erro ao excluir produto',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
-  const isLowStock = (product.estoque_atual || 0) <= (product.estoque_minimo || 0)
-  const stockPercentage = product.estoque_minimo 
-    ? ((product.estoque_atual || 0) / product.estoque_minimo) * 100 
-    : 100
+  const isLowStock = (product.estoque_atual || 0) <= (product.estoque_minimo || 0);
+  const stockPercentage = product.estoque_minimo
+    ? ((product.estoque_atual || 0) / product.estoque_minimo) * 100
+    : 100;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(value)
-  }
+    }).format(value);
+  };
 
   if (viewMode === 'list') {
     return (
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="transition-shadow hover:shadow-md">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Package className="h-6 w-6 text-primary" />
+            <div className="flex flex-1 items-center gap-4">
+              <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
+                <Package className="text-primary h-6 w-6" />
               </div>
-              
-              <div className="flex-1 min-w-0">
+
+              <div className="min-w-0 flex-1">
                 <Link
                   href={`/produtos/${product.id}`}
-                  className="font-medium hover:text-primary transition-colors"
+                  className="hover:text-primary font-medium transition-colors"
                 >
                   {product.nome}
                 </Link>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="mt-1 flex items-center gap-2">
                   {product.category && (
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className="text-xs"
                       style={{ borderColor: product.category.cor }}
                     >
@@ -521,7 +518,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                   )}
                   {isLowStock && (
                     <Badge variant="warning" className="text-xs">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      <AlertTriangle className="mr-1 h-3 w-3" />
                       Estoque baixo
                     </Badge>
                   )}
@@ -534,14 +531,12 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                 <p className="font-medium">{formatCurrency(product.preco_atual)}</p>
                 <p className="text-muted-foreground">/{product.unidade}</p>
               </div>
-              
+
               <div className="text-right">
                 <p className="font-medium">
                   {product.estoque_atual || 0} {product.unidade}
                 </p>
-                <p className="text-muted-foreground">
-                  Min: {product.estoque_minimo || 0}
-                </p>
+                <p className="text-muted-foreground">Min: {product.estoque_minimo || 0}</p>
               </div>
 
               <DropdownMenu>
@@ -552,16 +547,16 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit className="mr-2 h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleDelete}
                     disabled={isDeleting}
                     className="text-destructive"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Excluir
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -570,7 +565,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -578,18 +573,18 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Package className="h-6 w-6 text-primary" />
+            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
+              <Package className="text-primary h-6 w-6" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <Link
                 href={`/produtos/${product.id}`}
-                className="font-medium hover:text-primary transition-colors line-clamp-1"
+                className="hover:text-primary line-clamp-1 font-medium transition-colors"
               >
                 {product.nome}
               </Link>
               {product.descricao && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                   {product.descricao}
                 </p>
               )}
@@ -598,26 +593,26 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -627,10 +622,10 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
       <CardContent className="space-y-4">
         {/* Category and Status */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           {product.category && (
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="text-xs"
               style={{ borderColor: product.category.cor }}
             >
@@ -644,7 +639,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           )}
           {isLowStock && (
             <Badge variant="warning" className="text-xs">
-              <AlertTriangle className="h-3 w-3 mr-1" />
+              <AlertTriangle className="mr-1 h-3 w-3" />
               Estoque baixo
             </Badge>
           )}
@@ -653,18 +648,15 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
         {/* Price and Stock */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Preço</span>
+            <span className="text-muted-foreground text-sm">Preço</span>
             <span className="font-medium">
               {formatCurrency(product.preco_atual)}/{product.unidade}
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Estoque</span>
-            <span className={cn(
-              "font-medium",
-              isLowStock && "text-yellow-600"
-            )}>
+            <span className="text-muted-foreground text-sm">Estoque</span>
+            <span className={cn('font-medium', isLowStock && 'text-yellow-600')}>
               {product.estoque_atual || 0} {product.unidade}
             </span>
           </div>
@@ -672,16 +664,19 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           {/* Stock indicator */}
           {product.estoque_minimo && (
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="text-muted-foreground flex items-center justify-between text-xs">
                 <span>Estoque mínimo: {product.estoque_minimo}</span>
                 <span>{Math.round(stockPercentage)}%</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
+              <div className="bg-muted h-2 w-full rounded-full">
                 <div
                   className={cn(
-                    "h-2 rounded-full transition-all",
-                    stockPercentage >= 100 ? "bg-green-500" :
-                    stockPercentage >= 50 ? "bg-yellow-500" : "bg-red-500"
+                    'h-2 rounded-full transition-all',
+                    stockPercentage >= 100
+                      ? 'bg-green-500'
+                      : stockPercentage >= 50
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500',
                   )}
                   style={{ width: `${Math.min(stockPercentage, 100)}%` }}
                 />
@@ -699,36 +694,36 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // src/components/products/ProductFilters.tsx
-'use client'
+('use client');
 
-import { Button } from '@/components/ui/button'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
-import type { Category, Supplier } from '@/lib/supabase/types'
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { X } from 'lucide-react';
+import type { Category, Supplier } from '@/lib/supabase/types';
 
 interface ProductFiltersProps {
-  categories: Category[]
-  suppliers: Supplier[]
+  categories: Category[];
+  suppliers: Supplier[];
   filters: {
-    category: string
-    supplier: string
-    status: 'active' | 'inactive' | 'all'
-    lowStock: boolean
-  }
-  onFiltersChange: (filters: ProductFiltersProps['filters']) => void
+    category: string;
+    supplier: string;
+    status: 'active' | 'inactive' | 'all';
+    lowStock: boolean;
+  };
+  onFiltersChange: (filters: ProductFiltersProps['filters']) => void;
 }
 
 export function ProductFilters({
@@ -737,11 +732,8 @@ export function ProductFilters({
   filters,
   onFiltersChange,
 }: ProductFiltersProps) {
-  const hasActiveFilters = 
-    filters.category || 
-    filters.supplier || 
-    filters.status !== 'all' || 
-    filters.lowStock
+  const hasActiveFilters =
+    filters.category || filters.supplier || filters.status !== 'all' || filters.lowStock;
 
   const clearFilters = () => {
     onFiltersChange({
@@ -749,15 +741,15 @@ export function ProductFilters({
       supplier: '',
       status: 'all',
       lowStock: false,
-    })
-  }
+    });
+  };
 
   const updateFilter = (key: keyof typeof filters, value: any) => {
     onFiltersChange({
       ...filters,
       [key]: value,
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -778,7 +770,7 @@ export function ProductFilters({
                 <SelectItem key={category.id} value={category.id}>
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: category.cor }}
                     />
                     {category.nome}
@@ -843,16 +835,16 @@ export function ProductFilters({
 
       {/* Active filters */}
       {hasActiveFilters && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-          
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground text-sm">Filtros ativos:</span>
+
           {filters.category && (
             <Badge variant="secondary" className="gap-1">
-              Categoria: {categories.find(c => c.id === filters.category)?.nome}
+              Categoria: {categories.find((c) => c.id === filters.category)?.nome}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto p-0"
                 onClick={() => updateFilter('category', '')}
               >
                 <X className="h-3 w-3" />
@@ -862,11 +854,11 @@ export function ProductFilters({
 
           {filters.supplier && (
             <Badge variant="secondary" className="gap-1">
-              Fornecedor: {suppliers.find(s => s.id === filters.supplier)?.nome}
+              Fornecedor: {suppliers.find((s) => s.id === filters.supplier)?.nome}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto p-0"
                 onClick={() => updateFilter('supplier', '')}
               >
                 <X className="h-3 w-3" />
@@ -880,7 +872,7 @@ export function ProductFilters({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto p-0"
                 onClick={() => updateFilter('status', 'all')}
               >
                 <X className="h-3 w-3" />
@@ -894,7 +886,7 @@ export function ProductFilters({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto p-0"
                 onClick={() => updateFilter('lowStock', false)}
               >
                 <X className="h-3 w-3" />
@@ -913,13 +905,13 @@ export function ProductFilters({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // src/components/ui/switch.tsx
-import * as React from 'react'
-import * as SwitchPrimitives from '@radix-ui/react-switch'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
+import { cn } from '@/lib/utils';
 
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
@@ -927,52 +919,44 @@ const Switch = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
-      className
+      'focus-visible:ring-ring focus-visible:ring-offset-background data-[state=checked]:bg-primary data-[state=unchecked]:bg-input peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      className,
     )}
     {...props}
     ref={ref}
   >
     <SwitchPrimitives.Thumb
       className={cn(
-        'pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0'
+        'bg-background pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
       )}
     />
   </SwitchPrimitives.Root>
-))
-Switch.displayName = SwitchPrimitives.Root.displayName
+));
+Switch.displayName = SwitchPrimitives.Root.displayName;
 
-export { Switch }
+export { Switch };
 
 // src/components/common/EmptyState.tsx
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 interface EmptyStateProps {
-  title: string
-  description?: string
-  action?: ReactNode
-  icon?: ReactNode
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  icon?: ReactNode;
 }
 
 export function EmptyState({ title, description, action, icon }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       {icon && (
-        <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+        <div className="bg-muted mb-4 flex h-20 w-20 items-center justify-center rounded-full">
           {icon}
         </div>
       )}
       <h3 className="text-lg font-semibold">{title}</h3>
-      {description && (
-        <p className="mt-2 text-sm text-muted-foreground max-w-md">
-          {description}
-        </p>
-      )}
-      {action && (
-        <div className="mt-6">
-          {action}
-        </div>
-      )}
+      {description && <p className="text-muted-foreground mt-2 max-w-md text-sm">{description}</p>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
-  )
+  );
 }

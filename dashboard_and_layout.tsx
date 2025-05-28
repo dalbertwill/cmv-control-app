@@ -1,74 +1,72 @@
 // src/app/(protected)/layout.tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useAuth } from '@/components/providers/providers'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { Header } from '@/components/layout/Header'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { useState } from 'react';
+import { useAuth } from '@/components/providers/providers';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { Header } from '@/components/layout/Header';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 interface ProtectedLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
-  const { user, loading } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { user, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (!user) {
-    return null // Middleware will handle redirect
+    return null; // Middleware will handle redirect
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
-      
+
       {/* Main content */}
       <div className="lg:pl-72">
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        
+
         {/* Page content */}
         <main className="py-6">
-          <div className="container-responsive">
-            {children}
-          </div>
+          <div className="container-responsive">{children}</div>
         </main>
       </div>
     </div>
-  )
+  );
 }
 
 // src/components/layout/Sidebar.tsx
-'use client'
+('use client');
 
-import { Fragment } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Dialog, Transition } from '@headlessui/react'
-import { 
-  BarChart3, 
-  Book, 
-  Home, 
-  Package, 
-  Settings, 
-  ShoppingCart, 
+import { Fragment } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Dialog, Transition } from '@headlessui/react';
+import {
+  BarChart3,
+  Book,
+  Home,
+  Package,
+  Settings,
+  ShoppingCart,
   TrendingUp,
   X,
   LogOut,
   User,
-  Bell
-} from 'lucide-react'
-import { useAuth } from '@/components/providers/providers'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+  Bell,
+} from 'lucide-react';
+import { useAuth } from '@/components/providers/providers';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -76,20 +74,20 @@ const navigation = [
   { name: 'Receitas', href: '/receitas', icon: Book },
   { name: 'Compras', href: '/compras', icon: ShoppingCart },
   { name: 'Relatórios', href: '/relatorios', icon: BarChart3 },
-]
+];
 
 interface SidebarProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function Sidebar({ open, onOpenChange }: SidebarProps) {
-  const pathname = usePathname()
-  const { user, profile, signOut } = useAuth()
+  const pathname = usePathname();
+  const { user, profile, signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut()
-  }
+    await signOut();
+  };
 
   return (
     <>
@@ -133,7 +131,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => onOpenChange(false)}
-                      className="text-white hover:text-white hover:bg-white/10"
+                      className="text-white hover:bg-white/10 hover:text-white"
                     >
                       <X className="h-6 w-6" aria-hidden="true" />
                     </Button>
@@ -151,25 +149,25 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
         <SidebarContent pathname={pathname} profile={profile} onSignOut={handleSignOut} />
       </div>
     </>
-  )
+  );
 }
 
-function SidebarContent({ 
-  pathname, 
-  profile, 
-  onSignOut 
-}: { 
-  pathname: string
-  profile: any
-  onSignOut: () => void
+function SidebarContent({
+  pathname,
+  profile,
+  onSignOut,
+}: {
+  pathname: string;
+  profile: any;
+  onSignOut: () => void;
 }) {
   return (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-gray-900 px-6 pb-4 border-r border-border">
+    <div className="border-border flex grow flex-col gap-y-5 overflow-y-auto border-r bg-white px-6 pb-4 dark:bg-gray-900">
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <TrendingUp className="h-5 w-5 text-primary-foreground" />
+          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
+            <TrendingUp className="text-primary-foreground h-5 w-5" />
           </div>
           <span className="text-lg font-bold">CMV Control</span>
         </Link>
@@ -181,21 +179,15 @@ function SidebarContent({
           <li>
             <ul role="list" className="-mx-2 space-y-1">
               {navigation.map((item) => {
-                const isActive = pathname.startsWith(item.href)
+                const isActive = pathname.startsWith(item.href);
                 return (
                   <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'sidebar-item',
-                        isActive ? 'active' : ''
-                      )}
-                    >
+                    <Link href={item.href} className={cn('sidebar-item', isActive ? 'active' : '')}>
                       <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
                       {item.name}
                     </Link>
                   </li>
-                )
+                );
               })}
             </ul>
           </li>
@@ -207,25 +199,25 @@ function SidebarContent({
                 href="/configuracoes"
                 className={cn(
                   'sidebar-item',
-                  pathname.startsWith('/configuracoes') ? 'active' : ''
+                  pathname.startsWith('/configuracoes') ? 'active' : '',
                 )}
               >
                 <Settings className="h-5 w-5 shrink-0" />
                 Configurações
               </Link>
-              
+
               <Button
                 variant="ghost"
                 onClick={onSignOut}
-                className="w-full justify-start text-sm font-normal h-auto py-2 px-3 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto w-full justify-start px-3 py-2 text-sm font-normal"
               >
-                <LogOut className="h-5 w-5 shrink-0 mr-3" />
+                <LogOut className="mr-3 h-5 w-5 shrink-0" />
                 Sair
               </Button>
             </div>
 
             {/* User profile */}
-            <div className="mt-4 pt-4 border-t border-border">
+            <div className="border-border mt-4 border-t pt-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={profile?.avatar_url} />
@@ -233,11 +225,11 @@ function SidebarContent({
                     {profile?.nome_completo?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
                     {profile?.nome_completo || 'Usuário'}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-muted-foreground truncate text-xs">
                     {profile?.nome_restaurante || 'Restaurante'}
                   </p>
                 </div>
@@ -247,58 +239,53 @@ function SidebarContent({
         </ul>
       </nav>
     </div>
-  )
+  );
 }
 
 // src/components/layout/Header.tsx
-'use client'
+('use client');
 
-import { Bell, Menu, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { 
+import { Bell, Menu, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useAuth } from '@/components/providers/providers'
-import Link from 'next/link'
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/components/providers/providers';
+import Link from 'next/link';
 
 interface HeaderProps {
-  onMenuClick: () => void
+  onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut } = useAuth();
 
   return (
-    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border sticky top-0 z-40 border-b backdrop-blur">
       <div className="flex h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
         {/* Mobile menu button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMenuClick}
-          className="lg:hidden"
-        >
+        <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
 
         {/* Search */}
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          <form className="relative flex flex-1 max-w-md" action="#" method="GET">
+          <form className="relative flex max-w-md flex-1" action="#" method="GET">
             <label htmlFor="search-field" className="sr-only">
               Buscar
             </label>
-            <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-muted-foreground pl-3" />
+            <Search className="text-muted-foreground pointer-events-none absolute inset-y-0 left-0 h-full w-5 pl-3" />
             <Input
               id="search-field"
-              className="pl-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="border-0 bg-transparent pl-10 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Buscar produtos, receitas..."
               type="search"
               name="search"
@@ -315,7 +302,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Bell className="h-5 w-5" />
                 <Badge
                   variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
                 >
                   3
                 </Badge>
@@ -327,7 +314,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuItem>
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium">Estoque baixo</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Produto "Tomate" está com estoque baixo
                   </p>
                 </div>
@@ -335,15 +322,13 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuItem>
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium">Preço alterado</p>
-                  <p className="text-xs text-muted-foreground">
-                    Preço do "Frango" foi atualizado
-                  </p>
+                  <p className="text-muted-foreground text-xs">Preço do "Frango" foi atualizado</p>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium">CMV alto</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Receita "Pizza Margherita" com CMV de 45%
                   </p>
                 </div>
@@ -375,7 +360,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <p className="text-sm font-medium leading-none">
                     {profile?.nome_completo || 'Usuário'}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                  <p className="text-muted-foreground text-xs leading-none">
                     {profile?.nome_restaurante || 'Restaurante'}
                   </p>
                 </div>
@@ -388,21 +373,19 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Link href="/ajuda">Ajuda</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
-                Sair
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // src/components/ui/avatar.tsx
-import * as React from 'react'
-import * as AvatarPrimitive from '@radix-ui/react-avatar'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import { cn } from '@/lib/utils';
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -410,14 +393,11 @@ const Avatar = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
-    className={cn(
-      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
-      className
-    )}
+    className={cn('relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full', className)}
     {...props}
   />
-))
-Avatar.displayName = AvatarPrimitive.Root.displayName
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
 
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
@@ -428,8 +408,8 @@ const AvatarImage = React.forwardRef<
     className={cn('aspect-square h-full w-full', className)}
     {...props}
   />
-))
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+));
+AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
 const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
@@ -438,49 +418,49 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      'flex h-full w-full items-center justify-center rounded-full bg-muted',
-      className
+      'bg-muted flex h-full w-full items-center justify-center rounded-full',
+      className,
     )}
     {...props}
   />
-))
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+));
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
-export { Avatar, AvatarImage, AvatarFallback }
+export { Avatar, AvatarImage, AvatarFallback };
 
 // src/components/ui/dropdown-menu.tsx
-import * as React from 'react'
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import { Check, ChevronRight, Circle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { Check, ChevronRight, Circle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const DropdownMenu = DropdownMenuPrimitive.Root
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
-const DropdownMenuGroup = DropdownMenuPrimitive.Group
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal
-const DropdownMenuSub = DropdownMenuPrimitive.Sub
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
+const DropdownMenu = DropdownMenuPrimitive.Root;
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
-    inset?: boolean
+    inset?: boolean;
   }
 >(({ className, inset, children, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
+      'focus:bg-accent data-[state=open]:bg-accent flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
       inset && 'pl-8',
-      className
+      className,
     )}
     {...props}
   >
     {children}
     <ChevronRight className="ml-auto h-4 w-4" />
   </DropdownMenuPrimitive.SubTrigger>
-))
-DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
+));
+DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
 
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
@@ -489,13 +469,13 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-      className
+      'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg',
+      className,
     )}
     {...props}
   />
-))
-DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName
+));
+DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
@@ -506,32 +486,32 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
+        'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md',
+        className,
       )}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
-))
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
+));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
-    inset?: boolean
+    inset?: boolean;
   }
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'focus:bg-accent focus:text-accent-foreground relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
-      className
+      className,
     )}
     {...props}
   />
-))
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
@@ -540,8 +520,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-      className
+      'focus:bg-accent focus:text-accent-foreground relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
     )}
     checked={checked}
     {...props}
@@ -553,8 +533,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     </span>
     {children}
   </DropdownMenuPrimitive.CheckboxItem>
-))
-DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName
+));
+DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
 
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
@@ -563,8 +543,8 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-      className
+      'focus:bg-accent focus:text-accent-foreground relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
     )}
     {...props}
   >
@@ -575,26 +555,22 @@ const DropdownMenuRadioItem = React.forwardRef<
     </span>
     {children}
   </DropdownMenuPrimitive.RadioItem>
-))
-DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName
+));
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
 
 const DropdownMenuLabel = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
-    inset?: boolean
+    inset?: boolean;
   }
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={cn(
-      'px-2 py-1.5 text-sm font-semibold',
-      inset && 'pl-8',
-      className
-    )}
+    className={cn('px-2 py-1.5 text-sm font-semibold', inset && 'pl-8', className)}
     {...props}
   />
-))
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
 const DropdownMenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
@@ -602,24 +578,18 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-muted', className)}
+    className={cn('bg-muted -mx-1 my-1 h-px', className)}
     {...props}
   />
-))
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
+));
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
-const DropdownMenuShortcut = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
+const DropdownMenuShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
-    <span
-      className={cn('ml-auto text-xs tracking-widest opacity-60', className)}
-      {...props}
-    />
-  )
-}
-DropdownMenuShortcut.displayName = 'DropdownMenuShortcut'
+    <span className={cn('ml-auto text-xs tracking-widest opacity-60', className)} {...props} />
+  );
+};
+DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';
 
 export {
   DropdownMenu,
@@ -637,58 +607,58 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
-}
+};
 
 // src/components/common/LoadingSpinner.tsx
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
 export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',
-    lg: 'h-12 w-12'
-  }
+    lg: 'h-12 w-12',
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
-        <Loader2 className={`animate-spin text-primary ${sizeClasses[size]} ${className}`} />
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <Loader2 className={`text-primary animate-spin ${sizeClasses[size]} ${className}`} />
+        <p className="text-muted-foreground text-sm">Carregando...</p>
       </div>
     </div>
-  )
+  );
 }
 
 // src/app/(protected)/dashboard/page.tsx
-'use client'
+('use client');
 
-import { useAuth } from '@/components/providers/providers'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { 
-  TrendingDown, 
-  TrendingUp, 
-  Package, 
-  ShoppingCart, 
+import { useAuth } from '@/components/providers/providers';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  TrendingDown,
+  TrendingUp,
+  Package,
+  ShoppingCart,
   AlertTriangle,
   DollarSign,
   Plus,
-  ArrowRight
-} from 'lucide-react'
-import Link from 'next/link'
+  ArrowRight,
+} from 'lucide-react';
+import Link from 'next/link';
 
 // Mock data - Em produção, isso viria de uma API
 const dashboardData = {
   stats: {
     totalProducts: 45,
     totalRecipes: 12,
-    monthlyPurchases: 8500.00,
+    monthlyPurchases: 8500.0,
     avgCMV: 28.5,
   },
   lowStockProducts: [
@@ -705,12 +675,12 @@ const dashboardData = {
     { id: 1, name: 'Pizza Margherita', cmv: 25.5, sales: 150 },
     { id: 2, name: 'Hambúrguer Clássico', cmv: 32.0, sales: 98 },
     { id: 3, name: 'Salada Caesar', cmv: 18.5, sales: 75 },
-  ]
-}
+  ],
+};
 
 export default function DashboardPage() {
-  const { profile } = useAuth()
-  const { stats, lowStockProducts, recentActivity, topRecipes } = dashboardData
+  const { profile } = useAuth();
+  const { stats, lowStockProducts, recentActivity, topRecipes } = dashboardData;
 
   return (
     <div className="space-y-6">
@@ -727,13 +697,13 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           <Button asChild>
             <Link href="/produtos/novo">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Novo Produto
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/receitas/nova">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Nova Receita
             </Link>
           </Button>
@@ -744,56 +714,42 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Produtos Cadastrados
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Produtos Cadastrados</CardTitle>
+            <Package className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            <p className="text-xs text-muted-foreground">
-              +2 desde o mês passado
-            </p>
+            <p className="text-muted-foreground text-xs">+2 desde o mês passado</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Receitas Ativas
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Receitas Ativas</CardTitle>
+            <ShoppingCart className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRecipes}</div>
-            <p className="text-xs text-muted-foreground">
-              +1 desde a semana passada
-            </p>
+            <p className="text-muted-foreground text-xs">+1 desde a semana passada</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Compras do Mês
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Compras do Mês</CardTitle>
+            <DollarSign className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               R$ {stats.monthlyPurchases.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +12% desde o mês passado
-            </p>
+            <p className="text-muted-foreground text-xs">+12% desde o mês passado</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              CMV Médio
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">CMV Médio</CardTitle>
             {stats.avgCMV <= 30 ? (
               <TrendingDown className="h-4 w-4 text-green-600" />
             ) : (
@@ -802,9 +758,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.avgCMV}%</div>
-            <p className="text-xs text-muted-foreground">
-              Meta: {profile?.meta_cmv_mensal || 30}%
-            </p>
+            <p className="text-muted-foreground text-xs">Meta: {profile?.meta_cmv_mensal || 30}%</p>
           </CardContent>
         </Card>
       </div>
@@ -818,13 +772,11 @@ export default function DashboardPage() {
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
               Estoque Baixo
             </CardTitle>
-            <CardDescription>
-              Produtos que precisam de reposição
-            </CardDescription>
+            <CardDescription>Produtos que precisam de reposição</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {lowStockProducts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Todos os produtos estão com estoque adequado! 🎉
               </p>
             ) : (
@@ -832,7 +784,7 @@ export default function DashboardPage() {
                 <div key={product.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {product.stock} {product.unit} restantes
                     </p>
                   </div>
@@ -843,7 +795,7 @@ export default function DashboardPage() {
             <Button variant="outline" size="sm" className="w-full" asChild>
               <Link href="/produtos?filter=low-stock">
                 Ver todos os produtos
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>
@@ -853,25 +805,23 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Atividades Recentes</CardTitle>
-            <CardDescription>
-              Últimas ações no seu sistema
-            </CardDescription>
+            <CardDescription>Últimas ações no seu sistema</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {recentActivity.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                <div className="bg-primary mt-2 h-2 w-2 rounded-full" />
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium">{activity.action}</p>
-                  <p className="text-sm text-muted-foreground">{activity.item}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  <p className="text-muted-foreground text-sm">{activity.item}</p>
+                  <p className="text-muted-foreground text-xs">{activity.time}</p>
                 </div>
               </div>
             ))}
             <Button variant="outline" size="sm" className="w-full" asChild>
               <Link href="/atividades">
                 Ver histórico completo
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>
@@ -881,26 +831,24 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Receitas Mais Vendidas</CardTitle>
-            <CardDescription>
-              Performance das suas receitas este mês
-            </CardDescription>
+            <CardDescription>Performance das suas receitas este mês</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {topRecipes.map((recipe, index) => (
               <div key={recipe.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full">
                     <span className="text-xs font-medium">{index + 1}</span>
                   </div>
                   <div>
                     <p className="font-medium">{recipe.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {recipe.sales} vendas
-                    </p>
+                    <p className="text-muted-foreground text-sm">{recipe.sales} vendas</p>
                   </div>
                 </div>
-                <Badge 
-                  variant={recipe.cmv <= 30 ? 'success' : recipe.cmv <= 40 ? 'warning' : 'destructive'}
+                <Badge
+                  variant={
+                    recipe.cmv <= 30 ? 'success' : recipe.cmv <= 40 ? 'warning' : 'destructive'
+                  }
                 >
                   {recipe.cmv}%
                 </Badge>
@@ -909,7 +857,7 @@ export default function DashboardPage() {
             <Button variant="outline" size="sm" className="w-full" asChild>
               <Link href="/receitas">
                 Ver todas as receitas
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>
@@ -920,46 +868,60 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Ações Rápidas</CardTitle>
-          <CardDescription>
-            Tarefas comuns para gerenciar seu restaurante
-          </CardDescription>
+          <CardDescription>Tarefas comuns para gerenciar seu restaurante</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+          <Button
+            variant="outline"
+            className="flex h-auto flex-col items-center space-y-2 p-4"
+            asChild
+          >
             <Link href="/produtos/novo">
-              <Package className="h-8 w-8 text-primary" />
+              <Package className="text-primary h-8 w-8" />
               <span className="font-medium">Cadastrar Produto</span>
-              <span className="text-xs text-muted-foreground text-center">
+              <span className="text-muted-foreground text-center text-xs">
                 Adicione novos ingredientes ao seu estoque
               </span>
             </Link>
           </Button>
 
-          <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+          <Button
+            variant="outline"
+            className="flex h-auto flex-col items-center space-y-2 p-4"
+            asChild
+          >
             <Link href="/receitas/nova">
-              <ShoppingCart className="h-8 w-8 text-primary" />
+              <ShoppingCart className="text-primary h-8 w-8" />
               <span className="font-medium">Criar Receita</span>
-              <span className="text-xs text-muted-foreground text-center">
+              <span className="text-muted-foreground text-center text-xs">
                 Monte fichas técnicas com cálculo de CMV
               </span>
             </Link>
           </Button>
 
-          <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+          <Button
+            variant="outline"
+            className="flex h-auto flex-col items-center space-y-2 p-4"
+            asChild
+          >
             <Link href="/compras/nova">
-              <DollarSign className="h-8 w-8 text-primary" />
+              <DollarSign className="text-primary h-8 w-8" />
               <span className="font-medium">Registrar Compra</span>
-              <span className="text-xs text-muted-foreground text-center">
+              <span className="text-muted-foreground text-center text-xs">
                 Atualize preços e estoques automaticamente
               </span>
             </Link>
           </Button>
 
-          <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+          <Button
+            variant="outline"
+            className="flex h-auto flex-col items-center space-y-2 p-4"
+            asChild
+          >
             <Link href="/relatorios">
-              <TrendingUp className="h-8 w-8 text-primary" />
+              <TrendingUp className="text-primary h-8 w-8" />
               <span className="font-medium">Ver Relatórios</span>
-              <span className="text-xs text-muted-foreground text-center">
+              <span className="text-muted-foreground text-center text-xs">
                 Analise custos e identifique oportunidades
               </span>
             </Link>
@@ -967,5 +929,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

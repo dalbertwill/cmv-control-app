@@ -11,7 +11,7 @@ module.exports = {
   arrowParens: 'always',
   bracketSpacing: true,
   bracketSameLine: false,
-  
+
   // Configurações específicas por tipo de arquivo
   overrides: [
     {
@@ -78,16 +78,16 @@ module.exports = {
       },
     },
   ],
-  
+
   // Plugins
   plugins: [
     'prettier-plugin-tailwindcss', // Ordena classes do Tailwind
   ],
-  
+
   // Configurações específicas do Tailwind
   tailwindConfig: './tailwind.config.js',
   tailwindFunctions: ['clsx', 'cn', 'cva'],
-  
+
   // Ignorar arquivos
   ignore: [
     'node_modules/**',
@@ -102,4 +102,4 @@ module.exports = {
     'yarn.lock',
     'pnpm-lock.yaml',
   ],
-}
+};

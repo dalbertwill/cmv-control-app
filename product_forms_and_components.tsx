@@ -1,8 +1,8 @@
 // src/components/ui/checkbox.tsx
-import * as React from 'react'
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
-import { Check } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
@@ -11,67 +11,61 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-      className
+      'border-primary ring-offset-background focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground peer h-4 w-4 shrink-0 rounded-sm border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      className,
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator
-      className={cn('flex items-center justify-center text-current')}
-    >
+    <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
       <Check className="h-4 w-4" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+));
+Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
-export { Checkbox }
+export { Checkbox };
 
 // src/app/(protected)/produtos/novo/page.tsx
-'use client'
+('use client');
 
-import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProductForm } from '@/components/products/ProductForm'
-import { useCreateProduct } from '@/lib/queries/products'
-import { useToast } from '@/hooks/use-toast'
-import type { ProductInput } from '@/lib/validations/product'
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProductForm } from '@/components/products/ProductForm';
+import { useCreateProduct } from '@/lib/queries/products';
+import { useToast } from '@/hooks/use-toast';
+import type { ProductInput } from '@/lib/validations/product';
 
 export default function NovoProductPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const createProduct = useCreateProduct()
+  const router = useRouter();
+  const { toast } = useToast();
+  const createProduct = useCreateProduct();
 
   const handleSubmit = async (data: ProductInput) => {
     try {
-      const product = await createProduct.mutateAsync(data)
-      
+      const product = await createProduct.mutateAsync(data);
+
       toast({
         title: 'Produto criado com sucesso!',
         description: `${product.nome} foi adicionado ao seu catálogo.`,
-      })
-      
-      router.push('/produtos')
+      });
+
+      router.push('/produtos');
     } catch (error: any) {
       toast({
         title: 'Erro ao criar produto',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -91,103 +85,89 @@ export default function NovoProductPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProductForm
-            onSubmit={handleSubmit}
-            isLoading={createProduct.isPending}
-          />
+          <ProductForm onSubmit={handleSubmit} isLoading={createProduct.isPending} />
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // src/app/(protected)/produtos/[id]/editar/page.tsx
-'use client'
+('use client');
 
-import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProductForm } from '@/components/products/ProductForm'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { useProduct, useUpdateProduct } from '@/lib/queries/products'
-import { useToast } from '@/hooks/use-toast'
-import type { ProductInput } from '@/lib/validations/product'
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProductForm } from '@/components/products/ProductForm';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useProduct, useUpdateProduct } from '@/lib/queries/products';
+import { useToast } from '@/hooks/use-toast';
+import type { ProductInput } from '@/lib/validations/product';
 
 interface EditProductPageProps {
-  params: { id: string }
+  params: { id: string };
 }
 
 export default function EditProductPage({ params }: EditProductPageProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-  
-  const { data: product, isLoading, error } = useProduct(params.id)
-  const updateProduct = useUpdateProduct()
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const { data: product, isLoading, error } = useProduct(params.id);
+  const updateProduct = useUpdateProduct();
 
   const handleSubmit = async (data: ProductInput) => {
     try {
       const updatedProduct = await updateProduct.mutateAsync({
         id: params.id,
         data,
-      })
-      
+      });
+
       toast({
         title: 'Produto atualizado com sucesso!',
         description: `${updatedProduct.nome} foi atualizado.`,
-      })
-      
-      router.push('/produtos')
+      });
+
+      router.push('/produtos');
     } catch (error: any) {
       toast({
         title: 'Erro ao atualizar produto',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (error || !product) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-destructive">
-            Produto não encontrado
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-destructive text-lg font-medium">Produto não encontrado</p>
+          <p className="text-muted-foreground mt-1 text-sm">
             O produto que você está procurando não existe ou foi removido.
           </p>
-          <Button
-            onClick={() => router.push('/produtos')}
-            className="mt-4"
-          >
+          <Button onClick={() => router.push('/produtos')} className="mt-4">
             Voltar aos produtos
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
           <h1 className="text-3xl font-bold">Editar Produto</h1>
-          <p className="text-muted-foreground">
-            Altere as informações de {product.nome}
-          </p>
+          <p className="text-muted-foreground">Altere as informações de {product.nome}</p>
         </div>
       </div>
 
@@ -195,9 +175,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Informações do Produto</CardTitle>
-          <CardDescription>
-            Altere os dados do produto conforme necessário.
-          </CardDescription>
+          <CardDescription>Altere os dados do produto conforme necessário.</CardDescription>
         </CardHeader>
         <CardContent>
           <ProductForm
@@ -220,61 +198,67 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // src/components/products/ProductForm.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { CalendarIcon, Plus } from 'lucide-react'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CalendarIcon, Plus } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { CategoryForm } from '@/components/products/CategoryForm'
-import { SupplierForm } from '@/components/products/SupplierForm'
-import { useCategories, useSuppliers } from '@/lib/queries/products'
-import { productSchema, type ProductInput } from '@/lib/validations/product'
-import { ALL_UNITS } from '@/lib/constants/units'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { CategoryForm } from '@/components/products/CategoryForm';
+import { SupplierForm } from '@/components/products/SupplierForm';
+import { useCategories, useSuppliers } from '@/lib/queries/products';
+import { productSchema, type ProductInput } from '@/lib/validations/product';
+import { ALL_UNITS } from '@/lib/constants/units';
+import { cn } from '@/lib/utils';
 
 interface ProductFormProps {
-  initialData?: Partial<ProductInput>
-  onSubmit: (data: ProductInput) => Promise<void>
-  isLoading?: boolean
+  initialData?: Partial<ProductInput>;
+  onSubmit: (data: ProductInput) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormProps) {
-  const [showCategoryDialog, setShowCategoryDialog] = useState(false)
-  const [showSupplierDialog, setShowSupplierDialog] = useState(false)
-  
-  const { data: categories } = useCategories()
-  const { data: suppliers } = useSuppliers()
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showSupplierDialog, setShowSupplierDialog] = useState(false);
+
+  const { data: categories } = useCategories();
+  const { data: suppliers } = useSuppliers();
 
   const form = useForm<ProductInput>({
     resolver: zodResolver(productSchema),
@@ -292,25 +276,25 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
       ativo: true,
       ...initialData,
     },
-  })
+  });
 
   const handleSubmit = async (data: ProductInput) => {
-    await onSubmit(data)
-  }
+    await onSubmit(data);
+  };
 
   const formatCurrency = (value: string) => {
-    const numericValue = value.replace(/\D/g, '')
-    const floatValue = parseFloat(numericValue) / 100
+    const numericValue = value.replace(/\D/g, '');
+    const floatValue = parseFloat(numericValue) / 100;
     return floatValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    })
-  }
+    });
+  };
 
   const parseCurrency = (value: string) => {
-    const numericValue = value.replace(/[^\d,]/g, '').replace(',', '.')
-    return parseFloat(numericValue) || 0
-  }
+    const numericValue = value.replace(/[^\d,]/g, '').replace(',', '.');
+    return parseFloat(numericValue) || 0;
+  };
 
   return (
     <Form {...form}>
@@ -324,11 +308,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
               <FormItem>
                 <FormLabel>Nome do produto *</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Ex: Tomate italiano"
-                    {...field}
-                    disabled={isLoading}
-                  />
+                  <Input placeholder="Ex: Tomate italiano" {...field} disabled={isLoading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -343,15 +323,9 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
               <FormItem>
                 <FormLabel>Código interno</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Ex: TOM001"
-                    {...field}
-                    disabled={isLoading}
-                  />
+                  <Input placeholder="Ex: TOM001" {...field} disabled={isLoading} />
                 </FormControl>
-                <FormDescription>
-                  Código único para identificação interna
-                </FormDescription>
+                <FormDescription>Código único para identificação interna</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -402,7 +376,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         <SelectItem key={category.id} value={category.id}>
                           <div className="flex items-center gap-2">
                             <div
-                              className="w-3 h-3 rounded-full"
+                              className="h-3 w-3 rounded-full"
                               style={{ backgroundColor: category.cor }}
                             />
                             {category.nome}
@@ -411,7 +385,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                       ))}
                     </SelectContent>
                   </Select>
-                  
+
                   <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
                     <DialogTrigger asChild>
                       <Button type="button" variant="outline" size="icon">
@@ -457,7 +431,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                       ))}
                     </SelectContent>
                   </Select>
-                  
+
                   <Dialog open={showSupplierDialog} onOpenChange={setShowSupplierDialog}>
                     <DialogTrigger asChild>
                       <Button type="button" variant="outline" size="icon">
@@ -527,9 +501,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     disabled={isLoading}
                   />
                 </FormControl>
-                <FormDescription>
-                  Preço por {form.watch('unidade') || 'unidade'}
-                </FormDescription>
+                <FormDescription>Preço por {form.watch('unidade') || 'unidade'}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -549,16 +521,14 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         variant="outline"
                         className={cn(
                           'w-full justify-start text-left font-normal',
-                          !field.value && 'text-muted-foreground'
+                          !field.value && 'text-muted-foreground',
                         )}
                         disabled={isLoading}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? (
-                          format(new Date(field.value), 'PPP', { locale: ptBR })
-                        ) : (
-                          'Selecione uma data'
-                        )}
+                        {field.value
+                          ? format(new Date(field.value), 'PPP', { locale: ptBR })
+                          : 'Selecione uma data'}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -572,9 +542,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>
-                  Data de vencimento do produto (opcional)
-                </FormDescription>
+                <FormDescription>Data de vencimento do produto (opcional)</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -600,9 +568,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     disabled={isLoading}
                   />
                 </FormControl>
-                <FormDescription>
-                  Quantidade atual em estoque
-                </FormDescription>
+                <FormDescription>Quantidade atual em estoque</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -626,9 +592,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     disabled={isLoading}
                   />
                 </FormControl>
-                <FormDescription>
-                  Quando atingir este valor, você será notificado
-                </FormDescription>
+                <FormDescription>Quando atingir este valor, você será notificado</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -649,9 +613,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Produto ativo
-                </FormLabel>
+                <FormLabel>Produto ativo</FormLabel>
                 <FormDescription>
                   Produtos inativos não aparecem nas receitas e relatórios
                 </FormDescription>
@@ -662,42 +624,28 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
 
         {/* Submit buttons */}
         <div className="flex gap-4 pt-4">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 sm:flex-none"
-          >
+          <Button type="submit" disabled={isLoading} className="flex-1 sm:flex-none">
             {isLoading ? 'Salvando...' : initialData ? 'Atualizar produto' : 'Criar produto'}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isLoading}>
             Limpar
           </Button>
         </div>
       </form>
     </Form>
-  )
+  );
 }
 
 // src/components/ui/calendar.tsx
-import * as React from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { DayPicker } from 'react-day-picker'
-import { cn } from '@/lib/utils'
-import { buttonVariants } from '@/components/ui/button'
+import * as React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DayPicker } from 'react-day-picker';
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -710,19 +658,18 @@ function Calendar({
         nav: 'space-x-1 flex items-center',
         nav_button: cn(
           buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
         ),
         nav_button_previous: 'absolute left-1',
         nav_button_next: 'absolute right-1',
         table: 'w-full border-collapse space-y-1',
         head_row: 'flex',
-        head_cell:
-          'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
+        head_cell: 'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
         row: 'flex w-full mt-2',
         cell: 'h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
         day: cn(
           buttonVariants({ variant: 'ghost' }),
-          'h-9 w-9 p-0 font-normal aria-selected:opacity-100'
+          'h-9 w-9 p-0 font-normal aria-selected:opacity-100',
         ),
         day_range_end: 'day-range-end',
         day_selected:
@@ -731,8 +678,7 @@ function Calendar({
         day_outside:
           'day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
         day_disabled: 'text-muted-foreground opacity-50',
-        day_range_middle:
-          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+        day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
         day_hidden: 'invisible',
         ...classNames,
       }}
@@ -742,19 +688,19 @@ function Calendar({
       }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = 'Calendar'
+Calendar.displayName = 'Calendar';
 
-export { Calendar }
+export { Calendar };
 
 // src/components/ui/popover.tsx
-import * as React from 'react'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { cn } from '@/lib/utils';
 
-const Popover = PopoverPrimitive.Root
-const PopoverTrigger = PopoverPrimitive.Trigger
+const Popover = PopoverPrimitive.Root;
+const PopoverTrigger = PopoverPrimitive.Trigger;
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
@@ -766,45 +712,64 @@ const PopoverContent = React.forwardRef<
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
+        'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 rounded-md border p-4 shadow-md outline-none',
+        className,
       )}
       {...props}
     />
   </PopoverPrimitive.Portal>
-))
-PopoverContent.displayName = PopoverPrimitive.Content.displayName
+));
+PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverContent, PopoverTrigger }
+export { Popover, PopoverContent, PopoverTrigger };
 
 // src/components/products/CategoryForm.tsx
-'use client'
+('use client');
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useCreateCategory } from '@/lib/queries/products'
-import { useToast } from '@/hooks/use-toast'
-import { categorySchema, type CategoryInput } from '@/lib/validations/product'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useCreateCategory } from '@/lib/queries/products';
+import { useToast } from '@/hooks/use-toast';
+import { categorySchema, type CategoryInput } from '@/lib/validations/product';
 
 const PRESET_COLORS = [
-  '#ef4444', '#f97316', '#f59e0b', '#eab308',
-  '#22c55e', '#10b981', '#06b6d4', '#0ea5e9',
-  '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
-  '#d946ef', '#ec4899', '#f43f5e', '#64748b'
-]
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#eab308',
+  '#22c55e',
+  '#10b981',
+  '#06b6d4',
+  '#0ea5e9',
+  '#3b82f6',
+  '#6366f1',
+  '#8b5cf6',
+  '#a855f7',
+  '#d946ef',
+  '#ec4899',
+  '#f43f5e',
+  '#64748b',
+];
 
 interface CategoryFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function CategoryForm({ onSuccess }: CategoryFormProps) {
-  const { toast } = useToast()
-  const createCategory = useCreateCategory()
+  const { toast } = useToast();
+  const createCategory = useCreateCategory();
 
   const form = useForm<CategoryInput>({
     resolver: zodResolver(categorySchema),
@@ -814,27 +779,27 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
       descricao: '',
       ativo: true,
     },
-  })
+  });
 
   const handleSubmit = async (data: CategoryInput) => {
     try {
-      await createCategory.mutateAsync(data)
-      
+      await createCategory.mutateAsync(data);
+
       toast({
         title: 'Categoria criada com sucesso!',
         description: `${data.nome} foi adicionada às suas categorias.`,
-      })
-      
-      form.reset()
-      onSuccess?.()
+      });
+
+      form.reset();
+      onSuccess?.();
     } catch (error: any) {
       toast({
         title: 'Erro ao criar categoria',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -870,8 +835,8 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
                       <button
                         key={color}
                         type="button"
-                        className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                          field.value === color ? 'border-gray-900 scale-110' : 'border-gray-300'
+                        className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
+                          field.value === color ? 'scale-110 border-gray-900' : 'border-gray-300'
                         }`}
                         style={{ backgroundColor: color }}
                         onClick={() => field.onChange(color)}
@@ -883,7 +848,7 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
                     type="color"
                     {...field}
                     disabled={createCategory.isPending}
-                    className="w-20 h-10"
+                    className="h-10 w-20"
                   />
                 </div>
               </FormControl>
@@ -912,39 +877,42 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
         />
 
         <div className="flex gap-2 pt-2">
-          <Button
-            type="submit"
-            disabled={createCategory.isPending}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={createCategory.isPending} className="flex-1">
             {createCategory.isPending ? 'Criando...' : 'Criar categoria'}
           </Button>
         </div>
       </form>
     </Form>
-  )
+  );
 }
 
 // src/components/products/SupplierForm.tsx
-'use client'
+('use client');
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useCreateSupplier } from '@/lib/queries/products'
-import { useToast } from '@/hooks/use-toast'
-import { supplierSchema, type SupplierInput } from '@/lib/validations/product'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useCreateSupplier } from '@/lib/queries/products';
+import { useToast } from '@/hooks/use-toast';
+import { supplierSchema, type SupplierInput } from '@/lib/validations/product';
 
 interface SupplierFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function SupplierForm({ onSuccess }: SupplierFormProps) {
-  const { toast } = useToast()
-  const createSupplier = useCreateSupplier()
+  const { toast } = useToast();
+  const createSupplier = useCreateSupplier();
 
   const form = useForm<SupplierInput>({
     resolver: zodResolver(supplierSchema),
@@ -958,27 +926,27 @@ export function SupplierForm({ onSuccess }: SupplierFormProps) {
       observacoes: '',
       ativo: true,
     },
-  })
+  });
 
   const handleSubmit = async (data: SupplierInput) => {
     try {
-      await createSupplier.mutateAsync(data)
-      
+      await createSupplier.mutateAsync(data);
+
       toast({
         title: 'Fornecedor criado com sucesso!',
         description: `${data.nome} foi adicionado aos seus fornecedores.`,
-      })
-      
-      form.reset()
-      onSuccess?.()
+      });
+
+      form.reset();
+      onSuccess?.();
     } catch (error: any) {
       toast({
         title: 'Erro ao criar fornecedor',
         description: error.message,
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -1116,15 +1084,11 @@ export function SupplierForm({ onSuccess }: SupplierFormProps) {
         />
 
         <div className="flex gap-2 pt-2">
-          <Button
-            type="submit"
-            disabled={createSupplier.isPending}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={createSupplier.isPending} className="flex-1">
             {createSupplier.isPending ? 'Criando...' : 'Criar fornecedor'}
           </Button>
         </div>
       </form>
     </Form>
-  )
+  );
 }

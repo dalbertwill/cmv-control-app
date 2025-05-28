@@ -1,14 +1,14 @@
-import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
-import { Providers } from '@/components/providers/providers'
-import { Toaster } from '@/components/ui/toast'
-import '@/styles/globals.css'
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import { Providers } from '@/components/providers/providers';
+import { Toaster } from '@/components/ui/toast';
+import '@/styles/globals.css';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-})
+});
 
 export const metadata: Metadata = {
   title: {
@@ -78,9 +78,7 @@ export const metadata: Metadata = {
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: [
-      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-    ],
+    apple: [{ url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' }],
     shortcut: '/favicon.ico',
   },
   appleWebApp: {
@@ -90,7 +88,8 @@ export const metadata: Metadata = {
     startupImage: [
       {
         url: '/icons/icon-512x512.png',
-        media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
+        media:
+          '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
       },
     ],
   },
@@ -102,7 +101,7 @@ export const metadata: Metadata = {
   },
   category: 'business',
   classification: 'Restaurant Management System',
-}
+};
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -115,28 +114,24 @@ export const viewport: Viewport = {
   ],
   colorScheme: 'light dark',
   viewportFit: 'cover',
-}
+};
 
 interface RootLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html 
-      lang="pt-BR" 
-      className={inter.variable}
-      suppressHydrationWarning
-    >
+    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
+
         {/* DNS prefetch for external resources */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-        
+
         {/* Critical CSS for font loading */}
         <link
           rel="preload"
@@ -145,23 +140,23 @@ export default function RootLayout({ children }: RootLayoutProps) {
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        
+
         {/* PWA theme color */}
         <meta name="theme-color" content="#3B82F6" />
         <meta name="msapplication-TileColor" content="#3B82F6" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        
+
         {/* iOS specific */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="CMV Control" />
-        
+
         {/* Android specific */}
         <meta name="mobile-web-app-capable" content="yes" />
-        
+
         {/* Disable automatic phone number detection */}
         <meta name="format-detection" content="telephone=no" />
-        
+
         {/* Performance hints */}
         <link rel="preload" as="image" href="/icons/icon-192x192.png" />
       </head>
@@ -170,7 +165,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           {children}
           <Toaster />
         </Providers>
-        
+
         {/* Service Worker registration */}
         <script
           dangerouslySetInnerHTML={{
@@ -187,7 +182,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             `,
           }}
         />
-        
+
         {/* Performance monitoring */}
         {process.env.NODE_ENV === 'production' && (
           <script
@@ -220,5 +215,5 @@ export default function RootLayout({ children }: RootLayoutProps) {
         )}
       </body>
     </html>
-  )
+  );
 }
